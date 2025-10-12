@@ -1,0 +1,2 @@
+# This directory is for static assets like images, fonts, icons, etc.
+# Assets placed here should be imported in components/pages, not referenced from public/

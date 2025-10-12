@@ -1,6 +1,6 @@
-import HeroCinematic from '@/components/HeroCinematic';
-import Features3D from '@/components/Features3D';
-import Logo from '@/components/Logo';
+import HeroCinematic from '@/components/features/HeroCinematic';
+import Features3D from '@/components/features/Features3D';
+import Logo from '@/components/layout/Logo';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {

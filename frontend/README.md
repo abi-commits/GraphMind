@@ -71,3 +71,60 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Project Structure
+
+The frontend follows a well-organized structure for better maintainability:
+
+```
+frontend/
+├── public/              # Static files served directly
+│   ├── favicon.ico
+│   ├── placeholder.svg
+│   └── robots.txt
+├── src/
+│   ├── assets/         # Static assets (images, fonts, etc.)
+│   ├── components/     # React components
+│   │   ├── features/   # Feature-specific components
+│   │   │   ├── HeroCinematic.tsx
+│   │   │   ├── Features3D.tsx
+│   │   │   └── index.ts
+│   │   ├── layout/     # Layout components
+│   │   │   ├── Logo.tsx
+│   │   │   └── index.ts
+│   │   ├── ui/         # shadcn/ui components
+│   │   └── index.ts
+│   ├── constants/      # Application constants
+│   │   └── index.ts
+│   ├── hooks/          # Custom React hooks
+│   │   ├── use-mobile.tsx
+│   │   └── use-toast.ts
+│   ├── lib/            # Utility functions
+│   │   └── utils.ts    # cn() utility for className merging
+│   ├── pages/          # Page components (routes)
+│   │   ├── Index.tsx
+│   │   ├── Upload.tsx
+│   │   └── NotFound.tsx
+│   ├── types/          # TypeScript type definitions
+│   │   └── index.ts
+│   ├── App.tsx         # Main application component
+│   ├── main.tsx        # Application entry point
+│   └── index.css       # Global styles
+├── components.json     # shadcn/ui configuration
+├── tailwind.config.ts  # Tailwind CSS configuration
+├── tsconfig.json       # TypeScript configuration
+└── vite.config.ts      # Vite configuration
+```
+
+### Key Directories
+
+- **`src/components/features/`** - Feature-specific components like HeroCinematic and Features3D
+- **`src/components/layout/`** - Layout components like Logo, Header, Footer
+- **`src/components/ui/`** - Base UI components from shadcn/ui
+- **`src/lib/`** - Utility functions (e.g., `cn()` for className merging)
+- **`src/types/`** - Shared TypeScript types and interfaces
+- **`src/constants/`** - Application-wide constants
+- **`src/hooks/`** - Custom React hooks
+- **`src/pages/`** - Page-level components for routing
+
+For more details, see [src/README.md](./src/README.md).

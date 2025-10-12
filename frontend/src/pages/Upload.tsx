@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Upload as UploadIcon, FileText, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import Logo from '@/components/Logo';
+import Logo from '@/components/layout/Logo';
 
 const Upload = () => {
   const [isDragging, setIsDragging] = useState(false);
