@@ -1,0 +1,83 @@
+GraphMind Frontend Structure
+=============================
+
+frontend/
+│
+├── 📁 public/                      # Static files served directly
+│   ├── favicon.ico
+│   ├── placeholder.svg
+│   └── robots.txt
+│
+├── 📁 src/
+│   │
+│   ├── 📁 assets/                  # Static assets (images, fonts, etc.)
+│   │   └── .gitkeep
+│   │
+│   ├── 📁 components/              # React components
+│   │   │
+│   │   ├── 📁 features/           # Feature-specific components
+│   │   │   ├── HeroCinematic.tsx   # Animated hero section
+│   │   │   ├── Features3D.tsx      # 3D features showcase
+│   │   │   └── index.ts            # Barrel export
+│   │   │
+│   │   ├── 📁 layout/             # Layout components
+│   │   │   ├── Logo.tsx            # Application logo
+│   │   │   └── index.ts            # Barrel export
+│   │   │
+│   │   ├── 📁 ui/                 # shadcn/ui base components (50+ files)
+│   │   │   ├── button.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── ... (47+ more)
+│   │   │   └── use-toast.ts
+│   │   │
+│   │   └── index.ts                # Main barrel export
+│   │
+│   ├── 📁 constants/               # Application-wide constants
+│   │   └── index.ts                # API URLs, animations, z-index, etc.
+│   │
+│   ├── 📁 hooks/                   # Custom React hooks
+│   │   ├── use-mobile.tsx          # Mobile detection hook
+│   │   └── use-toast.ts            # Toast notifications hook
+│   │
+│   ├── 📁 lib/                     # Utility functions and helpers
+│   │   └── utils.ts                # cn() for className merging
+│   │
+│   ├── 📁 pages/                   # Page components (routes)
+│   │   ├── Index.tsx               # Landing page
+│   │   ├── Upload.tsx              # File upload page
+│   │   └── NotFound.tsx            # 404 error page
+│   │
+│   ├── 📁 types/                   # TypeScript type definitions
+│   │   └── index.ts                # Shared interfaces and types
+│   │
+│   ├── App.tsx                     # Main application component
+│   ├── App.css                     # App-specific styles
+│   ├── main.tsx                    # Application entry point
+│   ├── index.css                   # Global styles
+│   ├── vite-env.d.ts              # Vite type definitions
+│   └── README.md                   # Source structure documentation
+│
+├── 📄 components.json              # shadcn/ui configuration
+├── 📄 eslint.config.js            # ESLint configuration
+├── 📄 index.html                   # HTML entry point
+├── 📄 package.json                 # Dependencies and scripts
+├── 📄 postcss.config.js           # PostCSS configuration
+├── 📄 tailwind.config.ts          # Tailwind CSS configuration
+├── 📄 tsconfig.json               # TypeScript configuration (base)
+├── 📄 tsconfig.app.json           # TypeScript app configuration
+├── 📄 tsconfig.node.json          # TypeScript node configuration
+├── 📄 vite.config.ts              # Vite configuration
+├── 📄 README.md                    # Project documentation
+├── 📄 RESTRUCTURING_SUMMARY.md    # Restructuring details
+└── 📄 STRUCTURE.txt               # This file
+
+Key Features:
+=============
+✅ Organized by feature and purpose
+✅ Clear separation of concerns
+✅ Easy to navigate and maintain
+✅ Scalable structure
+✅ Follows React + TypeScript best practices
+✅ Barrel exports for clean imports
+✅ Centralized types and constants
