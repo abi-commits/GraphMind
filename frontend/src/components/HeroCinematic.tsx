@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { ArrowRight } from 'lucide-react';
+import { AuthModal } from './auth/AuthModal';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Node {
   x: number;
@@ -16,6 +19,8 @@ const HeroCinematic = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const nodesRef = useRef<Node[]>([]);
   const animationFrameRef = useRef<number>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -178,27 +183,40 @@ const HeroCinematic = () => {
         </p>
 
         {/* CTA with magnetic effect */}
-        <div className="flex items-center justify-center gap-4 mb-16 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-          <Button
-            size="lg"
-            className="group relative px-8 py-6 text-lg font-semibold bg-white text-black hover:bg-white/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-            style={{
-              transform: `translate(${mousePos.x * 0.1}px, ${mousePos.y * 0.1}px)`,
-              transition: 'transform 0.2s ease-out',
-            }}
-          >
-            Start Building
-            <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer -z-10" />
-          </Button>
-          
-          <Button
-            size="lg"
-            variant="outline"
-            className="px-8 py-6 text-lg glass glass-hover border-white/20 hover:border-white/40 transition-all duration-300"
-          >
-            View Demo
-          </Button>
+        <div className="flex items-center justify-center mb-16 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          {user ? (
+            <Button
+              size="lg"
+              className="group relative px-8 py-6 text-lg font-semibold bg-white text-black hover:bg-white/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+              style={{
+                transform: `translate(${mousePos.x * 0.1}px, ${mousePos.y * 0.1}px)`,
+                transition: 'transform 0.2s ease-out',
+              }}
+              onClick={() => navigate('/upload-and-query')}
+            >
+              Go to Dashboard
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer -z-10" />
+            </Button>
+          ) : (
+            <AuthModal
+              defaultTab="signup"
+              trigger={
+                <Button
+                  size="lg"
+                  className="group relative px-8 py-6 text-lg font-semibold bg-white text-black hover:bg-white/90 transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                  style={{
+                    transform: `translate(${mousePos.x * 0.1}px, ${mousePos.y * 0.1}px)`,
+                    transition: 'transform 0.2s ease-out',
+                  }}
+                >
+                  Start Building
+                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer -z-10" />
+                </Button>
+              }
+            />
+          )}
         </div>
 
         {/* Floating stats */}

@@ -2,15 +2,19 @@ interface LogoProps {
   size?: number;
   className?: string;
   showText?: boolean;
+  onClick?: () => void;
 }
 
-const Logo = ({ size = 32, className = "", showText = true }: LogoProps) => {
+const Logo = ({ size = 32, className = "", showText = true, onClick }: LogoProps) => {
   const nodeRadius = size * 0.08;
   const centerRadius = size * 0.12;
   const orbitRadius = size * 0.35;
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div 
+      className={`flex items-center gap-3 ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      onClick={onClick}
+    >
       <svg
         width={size}
         height={size}

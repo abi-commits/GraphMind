@@ -2,37 +2,56 @@ import HeroCinematic from '@/components/HeroCinematic';
 import Features3D from '@/components/Features3D';
 import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
+import { AuthStatus } from '@/components/auth/AuthComponents';
+import { AuthModal, LoginSignupButtons } from '@/components/auth/AuthModal';
+import { AuthConditional } from '@/components/auth/ProtectedRoute';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    if (user) {
+      navigate('/upload-and-query');
+    } else {
+      // Will trigger login via LoginButton
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo />
+          <Logo onClick={() => navigate('/')} />
           
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm text-white/70 hover:text-white transition-colors">
               Features
             </a>
-            <a href="#docs" className="text-sm text-white/70 hover:text-white transition-colors">
-              Documentation
+            <a href="/about" className="text-sm text-white/70 hover:text-white transition-colors">
+              About
             </a>
-            <a href="#pricing" className="text-sm text-white/70 hover:text-white transition-colors">
-              Pricing
+            <a href="/contact" className="text-sm text-white/70 hover:text-white transition-colors">
+              Contact
             </a>
           </div>
 
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              className="text-white/70 hover:text-white hover:bg-white/5"
-            >
-              Sign In
-            </Button>
-            <Button className="bg-white text-black hover:bg-white/90">
-              Get Started
-            </Button>
+            <AuthConditional when="unauthenticated">
+              <LoginSignupButtons />
+            </AuthConditional>
+            <AuthConditional when="authenticated">
+              <AuthStatus />
+              <Button 
+                className="bg-white text-black hover:bg-white/90"
+                onClick={() => navigate('/upload-and-query')}
+              >
+                Dashboard
+              </Button>
+            </AuthConditional>
           </div>
         </div>
       </nav>
@@ -55,15 +74,41 @@ const Index = () => {
             Join thousands of teams using GraphMind to unlock insights from their knowledge bases
           </p>
           <div className="flex items-center justify-center gap-4">
-            <Button size="lg" className="px-8 py-6 text-lg bg-white text-black hover:bg-white/90">
-              Start Free Trial
-            </Button>
+            <AuthConditional 
+              when="authenticated"
+              fallback={
+                <AuthModal 
+                  trigger={
+                    <Button size="lg" className="px-8 py-6 text-lg bg-white text-black hover:bg-white/90">
+                      Start Free Trial
+                    </Button>
+                  }
+                  defaultTab="signup"
+                />
+              }
+            >
+              <Button 
+                size="lg" 
+                className="px-8 py-6 text-lg bg-white text-black hover:bg-white/90"
+                onClick={() => navigate('/upload-and-query')}
+              >
+                Go to Dashboard
+              </Button>
+            </AuthConditional>
             <Button 
               size="lg" 
               variant="outline"
               className="px-8 py-6 text-lg glass glass-hover border-white/20"
             >
               Schedule Demo
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              className="px-8 py-6 text-lg glass glass-hover border-blue-500"
+              onClick={() => navigate('/contact')}
+            >
+              Contact Us
             </Button>
           </div>
         </div>
@@ -77,7 +122,8 @@ const Index = () => {
             <div className="flex items-center gap-6 text-sm text-white/60">
               <a href="#" className="hover:text-white transition-colors">Privacy</a>
               <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Contact</a>
+              <a href="/about" className="hover:text-white transition-colors">About</a>
+              <a href="/contact" className="hover:text-white transition-colors">Contact</a>
             </div>
           </div>
           <div className="mt-8 text-center text-sm text-white/40">
