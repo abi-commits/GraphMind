@@ -11,7 +11,7 @@ class QueryRequest(BaseModel):
     file_path: Optional[str] = Field(None, description="Optional specific file to query")
 
 class DocumentProcessRequest(BaseModel):
-    file_path: str = Field(..., description="Path to the document to process")
+    s3_key: str = Field(..., description="S3 key of the document to process")
     chunk_size: int = Field(1000, ge=100, le=5000, description="Size of text chunks")
     chunk_overlap: int = Field(200, ge=0, le=1000, description="Overlap between chunks")
     process_in_background: bool = Field(True, description="Process in background or synchronously")

@@ -1,5 +1,5 @@
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.embeddings.base import Embeddings
+from langchain_core.embeddings import Embeddings
 from typing import List
 from src.config.settings import settings
 from src.config.logging import GraphMindException, logging

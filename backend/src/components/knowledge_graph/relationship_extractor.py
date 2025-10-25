@@ -1,7 +1,8 @@
 from typing import List, Dict, Any
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema.output_parser import StrOutputParser
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from pydantic import SecretStr
 
 import json
 import re
@@ -11,10 +12,12 @@ from src.config.logging import GraphMindException, logging
 
 class RelationshipExtractor:
     def __init__(self) -> None:
-        self.llm = ChatOpenAI( # type: ignore[operator]
-            model = settings.OPENAI_MODEL,
-            openai_api_key = settings.OPENAI_API_KEY,
-            temperature = 0
+        # Convert string API key to SecretStr for ChatOpenAI
+        api_key = SecretStr(settings.OPENAI_API_KEY) if settings.OPENAI_API_KEY else None
+        self.llm = ChatOpenAI(
+            model=settings.OPENAI_MODEL,
+            api_key=api_key,
+            temperature=0
         )
         self._setup_prompt()
 

@@ -2,7 +2,7 @@ import pytest
 import tempfile
 import os
 from unittest.mock import Mock, patch, MagicMock
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 from src.components.data_ingestion.doc_loader import DocumentLoader
 from src.components.processing.chunking import create_chunker, Chunker

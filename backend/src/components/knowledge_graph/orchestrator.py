@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 from src.config.logging import GraphMindException, logging
 from .entity_extractor import EntityExtractor

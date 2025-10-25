@@ -1,5 +1,5 @@
 from typing import List, Dict, Optional, Any
-from langchain.schema import Document
+from langchain_core.documents import Document
 from pydantic import BaseModel
 
 class GraphState(BaseModel):

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { GraphData } from '@/types/graph';
 import { sampleGraphData } from '@/data/sampleGraphData';
 import { useToast } from '@/hooks/use-toast';
+import { apiClient } from '@/lib/api';
 
 interface UseKnowledgeGraphResult {
   graphData: GraphData | null;
@@ -10,6 +11,7 @@ interface UseKnowledgeGraphResult {
   refreshGraph: () => void;
   filterByType: (types: string[]) => void;
   searchNodes: (query: string) => void;
+  setGraphDataFromQuery: (queryGraphData: any) => void;
 }
 
 export const useKnowledgeGraph = (): UseKnowledgeGraphResult => {
@@ -19,35 +21,97 @@ export const useKnowledgeGraph = (): UseKnowledgeGraphResult => {
   const [originalData, setOriginalData] = useState<GraphData | null>(null);
   const { toast } = useToast();
 
-  // Simulate fetching graph data from backend
+  // Convert API graph data to our GraphData format
+  const convertApiGraphData = (apiGraphData: any): GraphData | null => {
+    if (!apiGraphData || !apiGraphData.nodes || !apiGraphData.edges) {
+      return null;
+    }
+
+    const nodes = apiGraphData.nodes.map((node: any) => ({
+      id: node.id,
+      label: node.label,
+      type: node.type,
+      group: node.type.toLowerCase(),
+      description: node.description,
+      confidence: node.confidence,
+      x: Math.random() * 800,
+      y: Math.random() * 600,
+      fx: null,
+      fy: null
+    }));
+
+    const links = apiGraphData.edges.map((edge: any) => ({
+      source: edge.source,
+      target: edge.target,
+      type: edge.type,
+      description: edge.description,
+      confidence: edge.confidence,
+      strength: edge.confidence || 0.5
+    }));
+
+    return { nodes, links };
+  };
+
+  // Set graph data from query results
+  const setGraphDataFromQuery = useCallback((queryGraphData: any) => {
+    if (queryGraphData) {
+      const convertedData = convertApiGraphData(queryGraphData);
+      if (convertedData) {
+        setGraphData(convertedData);
+        setOriginalData(convertedData);
+        toast({
+          title: "Knowledge Graph Updated",
+          description: `Graph updated with ${convertedData.nodes.length} nodes and ${convertedData.links.length} connections from your query.`,
+        });
+        return;
+      }
+    }
+    
+    // No fallback - show empty state if no query data
+    setGraphData(null);
+    setOriginalData(null);
+  }, [toast]);
+
+  // Fetch graph data from backend
   const fetchGraphData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Try to get document stats first to see if there are any processed documents
+      const stats = await apiClient.getDocumentStats();
       
-      // In real app, this would be an API call
-      // const response = await fetch('/api/knowledge-graph');
-      // const data = await response.json();
-      
-      setGraphData(sampleGraphData);
-      setOriginalData(sampleGraphData);
-      
-      toast({
-        title: "Knowledge Graph Loaded",
-        description: `Successfully loaded ${sampleGraphData.nodes.length} nodes and ${sampleGraphData.links.length} connections.`,
-      });
+      if (stats.success && stats.total_documents > 0) {
+        // If documents exist, we could query for a general knowledge graph
+        // For now, we'll use sample data as there's no general KG endpoint
+        // No documents processed yet
+        setGraphData(null);
+        setOriginalData(null);
+        
+        toast({
+          title: "ℹ️ No Knowledge Graph Data",
+          description: "Process some documents and make queries to generate a knowledge graph.",
+        });
+      } else {
+        // No documents in the system
+        setGraphData(null);
+        setOriginalData(null);
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load knowledge graph';
+      console.error('Failed to fetch graph data:', err);
+      
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch knowledge graph data';
       setError(errorMessage);
       
       toast({
-        title: "Failed to Load Graph",
+        title: "❌ Failed to Load Graph",
         description: errorMessage,
-        variant: "destructive",
+        variant: "destructive"
       });
+      
+      // Clear graph data on error
+      setGraphData(null);
+      setOriginalData(null);
     } finally {
       setIsLoading(false);
     }
@@ -146,5 +210,6 @@ export const useKnowledgeGraph = (): UseKnowledgeGraphResult => {
     refreshGraph,
     filterByType,
     searchNodes,
+    setGraphDataFromQuery,
   };
 };

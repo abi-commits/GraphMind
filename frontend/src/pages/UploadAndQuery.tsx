@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Network } from 'lucide-react';
-import { useDocuments } from '@/hooks/useDocuments';
+import { useDocuments, type Document } from '@/hooks/useDocuments';
 import { useQuery } from '@/hooks/useQuery';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useSidebar } from '@/hooks/useSidebar';
@@ -9,7 +9,8 @@ import SearchInput from '@/components/workspace/SearchInput';
 import ResultsArea from '@/components/workspace/ResultsArea';
 import GraphView from '@/components/workspace/GraphView';
 import DocumentPreview from '@/components/workspace/DocumentPreview';
-import type { Document } from '@/types/document';
+import { useKnowledgeGraph } from '@/hooks/useKnowledgeGraph';
+import ConnectionStatus from '@/components/common/ConnectionStatus';
 
 const Workspace = () => {
   const [showGraph, setShowGraph] = useState(false);
@@ -37,6 +38,8 @@ const Workspace = () => {
     query,
     setQuery,
     results,
+    summary,
+    knowledgeGraph,
     isQuerying,
     handleQuery
   } = useQuery();
@@ -47,6 +50,12 @@ const Workspace = () => {
     handleDragLeave,
     handleDrop
   } = useDragAndDrop(handleFiles);
+
+  const {
+    graphData,
+    isLoading: isGraphLoading,
+    setGraphDataFromQuery
+  } = useKnowledgeGraph();
 
   // Event handlers
   const handleUploadClick = () => {
@@ -69,8 +78,13 @@ const Workspace = () => {
     setQuery(`Tell me about ${documentName}`);
   };
 
-  const handleQuerySubmit = () => {
-    handleQuery(documents.length);
+  const handleQuerySubmit = async () => {
+    await handleQuery(documents.length);
+    
+    // Update knowledge graph with query results
+    if (knowledgeGraph) {
+      setGraphDataFromQuery(knowledgeGraph);
+    }
   };
 
   const handleToggleGraph = () => {
@@ -112,6 +126,11 @@ const Workspace = () => {
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
         isCollapsed ? 'ml-0' : 'ml-0'
       }`}>
+        {/* Connection Status Bar */}
+        <div className="bg-gray-900 border-b border-gray-700 px-4 py-2">
+          <ConnectionStatus />
+        </div>
+
         {/* Top Input Zone */}
         <SearchInput
           query={query}

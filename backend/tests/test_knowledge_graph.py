@@ -1,7 +1,7 @@
 import pytest
 import json
 from unittest.mock import Mock, patch
-from langchain.schema import Document
+from langchain_core.documents import Document
 import networkx as nx
 
 from src.components.knowledge_graph.entity_extractor import EntityExtractor

@@ -1,5 +1,4 @@
 from typing import Dict, Any, Optional, cast
-from langchain.schema import Document
 from src.workflows.kg_workflow import kg_workflow
 from src.workflows.state import GraphState
 from src.config.logging import GraphMindException, logging

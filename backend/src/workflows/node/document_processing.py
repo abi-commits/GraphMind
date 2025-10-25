@@ -1,12 +1,13 @@
 from typing import List, Dict, Optional, Any
 from src.components.data_ingestion.doc_loader import DocumentLoader
 from src.components.processing.chunking import create_chunker
+from src.services import get_vector_store
 from src.workflows.state import GraphState
 from src.config.logging import logging, GraphMindException
 
 
 def process_documents(state: GraphState) -> GraphState:
-    """Process documents: load, chunk, and combine context"""
+    """Process documents: load, chunk, and store in vector database"""
     try:
         if state.file_path:
             document_loader = DocumentLoader()
@@ -14,6 +15,10 @@ def process_documents(state: GraphState) -> GraphState:
 
             chunker = create_chunker()
             chunks = chunker.chunk_documents(documents)
+            
+            # Store chunks in vector database for later retrieval
+            vector_store = get_vector_store()
+            vector_store.add_documents(chunks)
 
             state_data = state.model_dump()
             state_data.update({

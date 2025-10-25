@@ -4,7 +4,7 @@ from langchain_text_splitters import (
     RecursiveCharacterTextSplitter, 
     TokenTextSplitter,
 )
-from langchain.schema import Document
+from langchain_core.documents import Document
 from src.config.settings import settings
 from src.config.logging import GraphMindException, logging
 

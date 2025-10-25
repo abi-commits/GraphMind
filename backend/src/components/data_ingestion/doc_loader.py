@@ -1,5 +1,5 @@
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredFileLoader, UnstructuredMarkdownLoader
-from langchain.schema import Document
+from langchain_core.documents import Document
 from typing import List, Tuple, Dict
 from pathlib import Path
 import os

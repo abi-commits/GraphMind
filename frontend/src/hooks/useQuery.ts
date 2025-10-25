@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { apiClient, QueryRequest, QueryResponse } from '@/lib/api';
 
 export interface QueryResult {
   id: number;
@@ -10,9 +11,28 @@ export interface QueryResult {
   relevance: number;
 }
 
+export interface KnowledgeGraphData {
+  nodes: Array<{
+    id: string;
+    label: string;
+    type: string;
+    description: string;
+    confidence: number;
+  }>;
+  edges: Array<{
+    source: string;
+    target: string;
+    type: string;
+    description: string;
+    confidence: number;
+  }>;
+}
+
 export const useQuery = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<QueryResult[]>([]);
+  const [summary, setSummary] = useState<string>('');
+  const [knowledgeGraph, setKnowledgeGraph] = useState<KnowledgeGraphData | null>(null);
   const [isQuerying, setIsQuerying] = useState(false);
   const { toast } = useToast();
 
@@ -41,27 +61,68 @@ export const useQuery = () => {
       description: "Analyzing your documents for relevant information.",
     });
 
-    // Simulate API call
-    setTimeout(() => {
-      const mockResults: QueryResult[] = [
-        { id: 1, title: 'Neural Networks Definition', excerpt: 'Neural networks are computational models inspired by biological neural networks...', source: 'research-paper.pdf', page: 5, relevance: 95 },
-        { id: 2, title: 'Applications in Industry', excerpt: 'Common applications include image recognition, natural language processing...', source: 'ml-guide.pdf', page: 12, relevance: 87 },
-        { id: 3, title: 'Training Methodologies', excerpt: 'Backpropagation is the primary algorithm used for training neural networks...', source: 'research-paper.pdf', page: 23, relevance: 82 },
-      ];
+    try {
+      const queryRequest: QueryRequest = {
+        query: query.trim(),
+        top_k: 5,
+        include_summary: true,
+        include_knowledge_graph: true
+      };
+
+      const response: QueryResponse = await apiClient.queryDocuments(queryRequest);
+
+      if (response.success) {
+        // Convert API response to QueryResult format
+        const queryResults: QueryResult[] = response.relevant_chunks?.map((chunk, index) => ({
+          id: index + 1,
+          title: `Result ${index + 1}`,
+          excerpt: chunk.content.substring(0, 200) + '...',
+          source: chunk.metadata?.file_name || 'Unknown Source',
+          page: chunk.metadata?.page || 1,
+          relevance: Math.floor(Math.random() * 20) + 80 // Mock relevance for now
+        })) || [];
+
+        setResults(queryResults);
+        setSummary(response.summary || '');
+        
+        // Set knowledge graph data
+        if (response.visualization_data) {
+          setKnowledgeGraph(response.visualization_data);
+        }
+
+        toast({
+          title: "✨ Results Found",
+          description: `Found ${queryResults.length} relevant results for your query.`,
+        });
+      } else {
+        throw new Error(response.error || 'Query failed');
+      }
+    } catch (error) {
+      console.error('Query error:', error);
       
-      setResults(mockResults);
-      setIsQuerying(false);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process your query';
+      
       toast({
-        title: "✨ Results Found",
-        description: `Found ${mockResults.length} relevant results for your query.`,
+        title: "❌ Query Failed",
+        description: errorMessage,
+        variant: "destructive"
       });
-    }, 2000);
+
+      // Clear results and show error state
+      setResults([]);
+      setSummary('');
+      setKnowledgeGraph(null);
+    } finally {
+      setIsQuerying(false);
+    }
   };
 
   return {
     query,
     setQuery,
     results,
+    summary,
+    knowledgeGraph,
     isQuerying,
     handleQuery
   };

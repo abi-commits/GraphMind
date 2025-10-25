@@ -255,17 +255,42 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-xs text-white/60">
                         <Loader className="w-3 h-3 animate-spin" />
-                        Processing... {doc.progress}%
+                        {doc.progress === 0 && 'Starting upload...'}
+                        {doc.progress > 0 && doc.progress < 30 && 'Uploading...'}
+                        {doc.progress >= 30 && doc.progress < 35 && 'Upload complete'}
+                        {doc.progress >= 35 && doc.progress < 60 && 'Analyzing content...'}
+                        {doc.progress >= 60 && doc.progress < 80 && 'Creating embeddings...'}
+                        {doc.progress >= 80 && doc.progress < 100 && 'Building knowledge graph...'}
+                        {doc.progress >= 100 && 'Finalizing...'}
+                        {' '}({doc.progress}%)
                       </div>
-                      <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-white/60 transition-all duration-300"
+                          className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500 ease-out"
                           style={{ width: `${doc.progress}%` }}
                         />
                       </div>
+                      {doc.progress > 0 && doc.progress < 100 && (
+                        <div className="text-xs text-white/40 text-center">
+                          This may take a few minutes for large documents
+                        </div>
+                      )}
+                    </div>
+                  ) : doc.status === 'failed' ? (
+                    <div className="space-y-2">
+                      <div className="text-xs text-red-400 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                        Processing failed
+                      </div>
+                      <button 
+                        onClick={() => window.location.reload()}
+                        className="w-full px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded text-xs font-medium text-red-300 transition-all duration-300"
+                      >
+                        Retry Upload
+                      </button>
                     </div>
                   ) : (
-                    <button className="w-full mt-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-xs font-medium transition-all duration-300">
+                    <button className="w-full mt-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-xs font-medium transition-all duration-300 hover:scale-105">
                       Query This Document
                     </button>
                   )}
