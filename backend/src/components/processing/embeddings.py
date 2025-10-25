@@ -1,6 +1,6 @@
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.embeddings import Embeddings
-from typing import List
+from typing import List, Union
 from src.config.settings import settings
 from src.config.logging import GraphMindException, logging
 
@@ -18,19 +18,60 @@ class EmbeddingGenerator(Embeddings):
         logging.info(f"Initialized HuggingFaceEmbeddings with model: {model_name}")
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        """Embed a list of documents."""
         try:
+            if not texts:
+                return []
             return self.embedding_model.embed_documents(texts)
         except Exception as e:
             logging.error(f"Error embedding documents: {str(e)}")
             raise GraphMindException(f"Error embedding documents: {e}")
 
     def embed_query(self, query: str) -> List[float]:
+        """Embed a single query."""
         try:
+            if not query:
+                return []
             return self.embedding_model.embed_query(query)
         except Exception as e:
             logging.error(f"Error embedding query: {str(e)}")
             raise GraphMindException(f"Error embedding query: {e}")
     
+    def __call__(self, input: Union[str, List[str]]) -> Union[List[float], List[List[float]]]:
+        """Make the embedding generator callable for ChromaDB compatibility.
+        
+        ChromaDB expects the embedding function to be callable and handle both
+        single strings and lists of strings.
+        """
+        try:
+            if isinstance(input, str):
+                return self.embed_query(input)
+            elif isinstance(input, list):
+                return self.embed_documents(input)
+            else:
+                raise ValueError(f"Input must be str or List[str], got {type(input)}")
+        except Exception as e:
+            logging.error(f"Error in callable embedding: {str(e)}")
+            raise GraphMindException(f"Error in callable embedding: {e}")
+    
+    async def aembed_documents(self, texts: List[str]) -> List[List[float]]:
+        """Async version of embed_documents (required by Embeddings interface)."""
+        try:
+            import asyncio
+            return await asyncio.to_thread(self.embed_documents, texts)
+        except Exception as e:
+            logging.error(f"Error in async embed_documents: {str(e)}")
+            raise GraphMindException(f"Error in async embed_documents: {e}")
+    
+    async def aembed_query(self, query: str) -> List[float]:
+        """Async version of embed_query (required by Embeddings interface)."""
+        try:
+            import asyncio
+            return await asyncio.to_thread(self.embed_query, query)
+        except Exception as e:
+            logging.error(f"Error in async embed_query: {str(e)}")
+            raise GraphMindException(f"Error in async embed_query: {e}")
+
     def embed_documents_batch(self, texts: List[str], batch_size: int) -> List[List[float]]:
         """Process embeddings in batches to manage memory usage"""
         try:

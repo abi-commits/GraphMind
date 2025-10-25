@@ -21,12 +21,19 @@ class Settings(BaseSettings):
     ALLOWED_FILE_TYPES: list[str] = ["pdf", "docx", "txt", "md", "html"]
     EMBEDDING_BATCH_SIZE: int = 32
     EMBEDDING_DEVICE: str = "cpu"  # e.g., "cpu" or "cuda"
-    OPENAI_MODEL: str = "gpt-4"
+    
+    # LLM Model settings
+    LLM_MODEL: str = "gemini-2.5-flash"
+    LLM_PROVIDER: str = "gemini" 
 
     # API settings
     API_PREFIX: str = "/api/v1"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    
+    # Timeout settings (in seconds)
+    REQUEST_TIMEOUT: int = 300  # 5 minutes for query processing
+    LLM_TIMEOUT: int = 120   # 2 minutes for LLM API calls
     
     # Storage settings
     DATA_DIR: str = "./data"
@@ -39,9 +46,15 @@ class Settings(BaseSettings):
     CHROMA_HOST: str = "localhost"
     CHROMA_PORT: int = 8000
     CHROMA_COLLECTION_NAME: str = "graphmind_collection"
-
-    # Security
-    OPENAI_API_KEY: str = ""
+    
+    # ChromaDB Cloud settings
+    CHROMA_API_KEY: str = ""
+    CHROMA_TENANT: str = ""
+    CHROMA_DATABASE: str = ""
+    CHROMA_USE_CLOUD: bool = True  
+    
+    # LLM API Keys
+    GOOGLE_API_KEY: str = ""  # Gemini API key
 
     # AWS S3 settings
     AWS_ACCESS_KEY_ID: str = ""

@@ -17,7 +17,7 @@ def generate_knowledge_graph(state: GraphState) -> GraphState:
                 "entities": kg_result.get("entities", []),
                 "relationships": kg_result.get("relationships", []),
                 "knowledge_graph": kg_result,
-                "visualizations_data": kg_result.get("visualizations", {}),
+                "visualizations_data": kg_result.get("visualization", {}),
                 "current_step": "knowledge_graph_generated"
             })
             return GraphState(**state_data)

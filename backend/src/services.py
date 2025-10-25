@@ -36,6 +36,13 @@ class GraphMindServices:
     
     def get_embedding_generator(self):
         """Get thread-safe singleton embedding generator instance."""
+        from src.config.settings import settings
+        
+        # For ChromaDB Cloud, we don't need a local embedding generator
+        if settings.CHROMA_USE_CLOUD:
+            logging.info("ChromaDB Cloud mode: Skipping local embedding generator initialization")
+            return None
+            
         if self._embedding_generator is None:
             with self._embedding_lock:
                 if self._embedding_generator is None:
@@ -56,8 +63,14 @@ class GraphMindServices:
                     logging.info("Initializing singleton ChromaVectorStore")
                     try:
                         from src.components.processing.vector_store import create_vector_store
-                        embedding_generator = self.get_embedding_generator()
-                        self._vector_store = create_vector_store(embedding_generator)
+                        from src.config.settings import settings
+                        
+                        # For ChromaDB Cloud, we don't need an embedding generator
+                        if settings.CHROMA_USE_CLOUD:
+                            self._vector_store = create_vector_store(embedding_generator=None)
+                        else:
+                            embedding_generator = self.get_embedding_generator()
+                            self._vector_store = create_vector_store(embedding_generator)
                     except Exception as e:
                         logging.error(f"Failed to initialize ChromaVectorStore: {e}")
                         raise GraphMindException(f"Failed to initialize ChromaVectorStore: {e}")
@@ -72,15 +85,19 @@ class GraphMindServices:
     
     def health_check(self) -> dict:
         """Perform health checks on all services."""
+        from src.config.settings import settings
+        
         health_status = {
-            "embedding_generator": "not_initialized",
+            "embedding_generator": "not_needed" if settings.CHROMA_USE_CLOUD else "not_initialized",
             "vector_store": "not_initialized"
         }
         
         try:
-            if self._embedding_generator is not None:
+            if not settings.CHROMA_USE_CLOUD and self._embedding_generator is not None:
                 # Simple check - embedding generator doesn't have built-in health check
                 health_status["embedding_generator"] = "healthy"
+            elif settings.CHROMA_USE_CLOUD:
+                health_status["embedding_generator"] = "cloud_managed"
             
             if self._vector_store is not None:
                 vs_health = self._vector_store.health_check()

@@ -1,7 +1,6 @@
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from langchain_core.documents import Document
-import networkx as nx
 
 from src.workflows.flow_manager import WorkflowManager
 from src.workflows.state import GraphState

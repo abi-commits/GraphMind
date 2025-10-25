@@ -24,31 +24,35 @@ export const useKnowledgeGraph = (): UseKnowledgeGraphResult => {
   // Convert API graph data to our GraphData format
   const convertApiGraphData = (apiGraphData: any): GraphData | null => {
     if (!apiGraphData || !apiGraphData.nodes || !apiGraphData.edges) {
+      console.log('Invalid API graph data:', apiGraphData);
       return null;
     }
 
     const nodes = apiGraphData.nodes.map((node: any) => ({
       id: node.id,
       label: node.label,
-      type: node.type,
-      group: node.type.toLowerCase(),
-      description: node.description,
-      confidence: node.confidence,
+      type: node.type.toLowerCase() as any, // Convert to frontend format
+      size: 12, // Default size
+      color: '#00ff88', // Default color, will be overridden by component
+      description: node.description || '',
+      importance: node.confidence || 0.5,
       x: Math.random() * 800,
       y: Math.random() * 600,
       fx: null,
       fy: null
     }));
 
-    const links = apiGraphData.edges.map((edge: any) => ({
+    const links = apiGraphData.edges.map((edge: any, index: number) => ({
+      id: `link_${index}`,
       source: edge.source,
       target: edge.target,
-      type: edge.type,
-      description: edge.description,
-      confidence: edge.confidence,
-      strength: edge.confidence || 0.5
+      type: edge.type.toLowerCase().replace(/[-_\s]/g, '_') as any, // Convert to frontend format
+      weight: edge.confidence || 0.5,
+      label: edge.description || '',
+      description: edge.description || '',
     }));
 
+    console.log('Converted graph data:', { nodes: nodes.length, links: links.length });
     return { nodes, links };
   };
 

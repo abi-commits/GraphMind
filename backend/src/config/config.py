@@ -1,5 +1,5 @@
 import os
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
@@ -14,9 +14,10 @@ class Settings(BaseSettings):
     chunk_size: int = 500
     chunk_overlap: int = 50
 
-    # OpenAI Settings
-    openai_api_key: Optional[str] = os.getenv("OPENAI_API_KEY")
-    openai_model: str = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+    # LLM Settings
+    llm_provider: str = os.getenv("LLM_PROVIDER", "gemini")
+    llm_model: str = os.getenv("LLM_MODEL", "gemini-2.5-flash")
+    google_api_key: Optional[str] = os.getenv("GOOGLE_API_KEY")
 
     # Storage Settings
     data_dir: str = os.getenv("DATA_DIR", "data")

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Network } from 'lucide-react';
+import { Network, Activity, Database, Cloud, Zap } from 'lucide-react';
 import { useDocuments, type Document } from '@/hooks/useDocuments';
 import { useQuery } from '@/hooks/useQuery';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
@@ -126,9 +126,41 @@ const Workspace = () => {
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
         isCollapsed ? 'ml-0' : 'ml-0'
       }`}>
-        {/* Connection Status Bar */}
-        <div className="bg-gray-900 border-b border-gray-700 px-4 py-2">
-          <ConnectionStatus />
+        {/* Enhanced Status Bar */}
+        <div className="bg-gray-900/80 backdrop-blur-sm border-b border-gray-700/50 px-4 py-2">
+          <div className="flex items-center justify-between">
+            <ConnectionStatus />
+            <div className="flex items-center gap-2 md:gap-4 text-xs">
+              {/* Document Count */}
+              <div className="flex items-center gap-1.5 text-gray-400">
+                <Database className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{documents.length} documents</span>
+                <span className="sm:hidden">{documents.length}</span>
+              </div>
+              
+              {/* ChromaDB Status */}
+              <div className="hidden md:flex items-center gap-1.5 text-green-400">
+                <Cloud className="w-3.5 h-3.5" />
+                <span>ChromaDB Cloud</span>
+              </div>
+              
+              {/* Processing Status */}
+              {documents.some(doc => doc.status === 'processing') && (
+                <div className="flex items-center gap-1.5 text-blue-400">
+                  <Activity className="w-3.5 h-3.5 animate-pulse" />
+                  <span className="hidden sm:inline">Processing...</span>
+                </div>
+              )}
+              
+              {/* Knowledge Graph Ready */}
+              {graphData && (
+                <div className="flex items-center gap-1.5 text-purple-400">
+                  <Network className="w-3.5 h-3.5" />
+                  <span className="hidden lg:inline">Graph Ready</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Top Input Zone */}
@@ -141,11 +173,13 @@ const Workspace = () => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          hasDocuments={documents.length > 0}
         />
 
         {/* Results Area */}
         <ResultsArea
           results={results}
+          summary={summary}
           isQuerying={isQuerying}
           documentsCount={documents.length}
           onShowGraph={handleToggleGraph}
@@ -157,6 +191,7 @@ const Workspace = () => {
       <GraphView
         showGraph={showGraph}
         onClose={handleCloseGraph}
+        graphData={graphData}
       />
 
       <DocumentPreview
@@ -164,6 +199,17 @@ const Workspace = () => {
         onClose={handleClosePreview}
         onQueryDocument={handleQueryDocument}
       />
+
+      {/* Floating Action Button for Knowledge Graph (Mobile) */}
+      {graphData && (
+        <button
+          onClick={handleToggleGraph}
+          className="md:hidden fixed bottom-6 right-6 z-40 w-14 h-14 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 rounded-full shadow-lg shadow-purple-500/25 flex items-center justify-center transition-all duration-300 hover:scale-110"
+          aria-label="Toggle Knowledge Graph"
+        >
+          <Network className="w-6 h-6 text-white" />
+        </button>
+      )}
     </div>
   );
 };

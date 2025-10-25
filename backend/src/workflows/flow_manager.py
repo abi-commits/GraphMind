@@ -31,6 +31,15 @@ class WorkflowManager:
             if hasattr(final_state, 'error') and final_state.error:
                 raise GraphMindException(f"Workflow failed: {final_state.error}")
             
+            # Convert Document objects to dict format for API response
+            relevant_chunks_formatted = []
+            if hasattr(final_state, 'relevant_chunks') and final_state.relevant_chunks:
+                for chunk in final_state.relevant_chunks:
+                    relevant_chunks_formatted.append({
+                        "content": chunk.page_content,
+                        "metadata": chunk.metadata or {}
+                    })
+            
             return {
                 "success": True,
                 "summary": final_state.summary,
@@ -38,6 +47,7 @@ class WorkflowManager:
                 "visualization_data": final_state.visualizations_data,
                 "entities": final_state.entities,
                 "relationships": final_state.relationships,
+                "relevant_chunks": relevant_chunks_formatted,
                 "processing_steps": [final_state.current_step] if final_state.current_step else []
             }
             

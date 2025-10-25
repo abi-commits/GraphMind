@@ -1,7 +1,6 @@
 from typing import Dict, Any
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import SecretStr
 from src.workflows.state import GraphState
 from src.config.settings import settings
 from src.config.logging import logging
@@ -11,12 +10,12 @@ def generate_summary(state: GraphState) -> GraphState:
     """Generate a concise summary from the knowledge graph"""
     try:
         if state.combined_context and state.query:
-            # Convert string API key to SecretStr for ChatOpenAI
-            api_key = SecretStr(settings.OPENAI_API_KEY) if settings.OPENAI_API_KEY else None
-            llm = ChatOpenAI(
-                model=settings.OPENAI_MODEL,
-                api_key=api_key,
-                temperature=0
+            # Use Gemini for all LLM tasks
+            llm = ChatGoogleGenerativeAI(
+                model=settings.LLM_MODEL,
+                google_api_key=settings.GOOGLE_API_KEY,
+                temperature=0,
+                timeout=settings.LLM_TIMEOUT
             )
 
             prompt = ChatPromptTemplate.from_messages([

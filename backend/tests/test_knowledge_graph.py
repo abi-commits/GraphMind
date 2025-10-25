@@ -2,7 +2,6 @@ import pytest
 import json
 from unittest.mock import Mock, patch
 from langchain_core.documents import Document
-import networkx as nx
 
 from src.components.knowledge_graph.entity_extractor import EntityExtractor
 from src.components.knowledge_graph.relationship_extractor import RelationshipExtractor
@@ -14,11 +13,11 @@ from src.config.logging import GraphMindException
 class TestEntityExtractor:
     """Test EntityExtractor.extract_entities() - the core function"""
     
-    @patch('src.components.knowledge_graph.entity_extractor.ChatOpenAI')
-    def test_extract_entities_success(self, mock_openai):
+    @patch('src.components.knowledge_graph.entity_extractor.ChatGoogleGenerativeAI')
+    def test_extract_entities_success(self, mock_gemini):
         """Test successful entity extraction"""
         mock_llm = Mock()
-        mock_openai.return_value = mock_llm
+        mock_gemini.return_value = mock_llm
         
         entity_response = json.dumps({
             "entities": [
@@ -50,11 +49,11 @@ class TestEntityExtractor:
         assert entities[1]["name"] == "Google"
         assert entities[1]["type"] == "ORGANIZATION"
     
-    @patch('src.components.knowledge_graph.entity_extractor.ChatOpenAI')
-    def test_extract_entities_handles_invalid_json(self, mock_openai):
+    @patch('src.components.knowledge_graph.entity_extractor.ChatGoogleGenerativeAI')
+    def test_extract_entities_handles_invalid_json(self, mock_gemini):
         """Test handling of invalid JSON response"""
         mock_llm = Mock()
-        mock_openai.return_value = mock_llm
+        mock_gemini.return_value = mock_llm
         
         extractor = EntityExtractor()
         extractor.chain = Mock()
@@ -65,11 +64,11 @@ class TestEntityExtractor:
         # Should return empty list when JSON parsing fails
         assert entities == []
     
-    @patch('src.components.knowledge_graph.entity_extractor.ChatOpenAI')
-    def test_extract_entities_text_truncation(self, mock_openai):
+    @patch('src.components.knowledge_graph.entity_extractor.ChatGoogleGenerativeAI')
+    def test_extract_entities_text_truncation(self, mock_gemini):
         """Test that long text is truncated"""
         mock_llm = Mock()
-        mock_openai.return_value = mock_llm
+        mock_gemini.return_value = mock_llm
         
         extractor = EntityExtractor()
         extractor.chain = Mock()
@@ -88,11 +87,11 @@ class TestEntityExtractor:
 class TestRelationshipExtractor:
     """Test RelationshipExtractor.extract_relationships() - the core function"""
     
-    @patch('src.components.knowledge_graph.relationship_extractor.ChatOpenAI')
-    def test_extract_relationships_success(self, mock_openai):
+    @patch('src.components.knowledge_graph.relationship_extractor.ChatGoogleGenerativeAI')
+    def test_extract_relationships_success(self, mock_gemini):
         """Test successful relationship extraction"""
         mock_llm = Mock()
-        mock_openai.return_value = mock_llm
+        mock_gemini.return_value = mock_llm
         
         relationship_response = json.dumps({
             "relationships": [
@@ -123,11 +122,11 @@ class TestRelationshipExtractor:
         assert relationships[0]["target"] == "Google"
         assert relationships[0]["type"] == "WORKS_FOR"
     
-    @patch('src.components.knowledge_graph.relationship_extractor.ChatOpenAI')
-    def test_extract_relationships_handles_invalid_json(self, mock_openai):
+    @patch('src.components.knowledge_graph.relationship_extractor.ChatGoogleGenerativeAI')
+    def test_extract_relationships_handles_invalid_json(self, mock_gemini):
         """Test handling of invalid JSON response"""
         mock_llm = Mock()
-        mock_openai.return_value = mock_llm
+        mock_gemini.return_value = mock_llm
         
         extractor = RelationshipExtractor()
         extractor.chain = Mock()
@@ -157,22 +156,22 @@ class TestKnowledgeGraphBuilder:
         
         result = builder.build_graph(entities, relationships)
         
-        # Verify result structure
-        assert "graph" in result
+        # Verify result structure (no NetworkX graph, just raw data)
         assert "entities" in result
         assert "relationships" in result
         assert "metrics" in result
         assert "visualization" in result
         
-        # Verify graph structure
-        graph = result["graph"]
-        assert graph.number_of_nodes() == 2
-        assert graph.number_of_edges() == 1
+        # Verify entities and relationships are preserved
+        assert len(result["entities"]) == 2
+        assert len(result["relationships"]) == 1
         
         # Verify metrics
         metrics = result["metrics"]
         assert metrics["num_nodes"] == 2
         assert metrics["num_edges"] == 1
+        assert "density" in metrics
+        assert "connected_entities" in metrics
     
     def test_build_graph_empty_inputs(self):
         """Test building graph with empty inputs"""
@@ -180,8 +179,8 @@ class TestKnowledgeGraphBuilder:
         
         result = builder.build_graph([], [])
         
-        assert result["graph"].number_of_nodes() == 0
-        assert result["graph"].number_of_edges() == 0
+        assert len(result["entities"]) == 0
+        assert len(result["relationships"]) == 0
         assert result["metrics"]["num_nodes"] == 0
         assert result["metrics"]["num_edges"] == 0
 
@@ -206,9 +205,10 @@ class TestGraphOrchestrator:
         mock_entities = [{"name": "Entity1", "type": "PERSON"}]
         mock_relationships = [{"source": "Entity1", "target": "Entity2", "type": "KNOWS"}]
         mock_graph_result = {
-            "graph": nx.DiGraph(),
             "entities": mock_entities,
-            "relationships": mock_relationships
+            "relationships": mock_relationships,
+            "metrics": {"num_nodes": 2, "num_edges": 1},
+            "visualization": {"nodes": [], "edges": []}
         }
         
         mock_ent_extractor.extract_entities.return_value = mock_entities
@@ -252,13 +252,13 @@ class TestGraphOrchestrator:
         
         assert result == mock_graph_result
     
-    @patch('src.components.knowledge_graph.entity_extractor.ChatOpenAI')
-    @patch('src.components.knowledge_graph.relationship_extractor.ChatOpenAI')
-    def test_build_graph_from_text_empty_error(self, mock_rel_openai, mock_ent_openai):
+    @patch('src.components.knowledge_graph.entity_extractor.ChatGoogleGenerativeAI')
+    @patch('src.components.knowledge_graph.relationship_extractor.ChatGoogleGenerativeAI')
+    def test_build_graph_from_text_empty_error(self, mock_rel_gemini, mock_ent_gemini):
         """Test error handling for empty text"""
         # Mock the LLM instances
-        mock_rel_openai.return_value = Mock()
-        mock_ent_openai.return_value = Mock()
+        mock_rel_gemini.return_value = Mock()
+        mock_ent_gemini.return_value = Mock()
         
         orchestrator = GraphOrchestrator()
         
@@ -267,13 +267,13 @@ class TestGraphOrchestrator:
         
         assert "Text cannot be empty" in str(exc_info.value)
     
-    @patch('src.components.knowledge_graph.entity_extractor.ChatOpenAI')
-    @patch('src.components.knowledge_graph.relationship_extractor.ChatOpenAI')
-    def test_build_knowledge_graph_empty_documents_error(self, mock_rel_openai, mock_ent_openai):
+    @patch('src.components.knowledge_graph.entity_extractor.ChatGoogleGenerativeAI')
+    @patch('src.components.knowledge_graph.relationship_extractor.ChatGoogleGenerativeAI')
+    def test_build_knowledge_graph_empty_documents_error(self, mock_rel_gemini, mock_ent_gemini):
         """Test error handling for documents with no content"""
         # Mock the LLM instances
-        mock_rel_openai.return_value = Mock()
-        mock_ent_openai.return_value = Mock()
+        mock_rel_gemini.return_value = Mock()
+        mock_ent_gemini.return_value = Mock()
         
         orchestrator = GraphOrchestrator()
         

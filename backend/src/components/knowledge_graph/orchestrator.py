@@ -41,3 +41,16 @@ class GraphOrchestrator:
         
         except Exception as e:
             raise GraphMindException(f"Knowledge graph from text failed: {e}")
+    
+    def clear_all_caches(self) -> None:
+        """Clear all caches in the knowledge graph pipeline."""
+        self.entity_extractor.clear_cache()
+        self.relationship_extractor.clear_cache()
+        logging.info("All knowledge graph caches cleared")
+    
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """Get cache statistics from all components."""
+        return {
+            "entity_extractor": self.entity_extractor.get_cache_stats(),
+            "relationship_extractor": self.relationship_extractor.get_cache_stats()
+        }

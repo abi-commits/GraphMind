@@ -2,17 +2,22 @@ import React, { useState } from 'react';
 import { Network, X } from 'lucide-react';
 import KnowledgeGraph from '@/components/graph/KnowledgeGraph';
 import { sampleGraphData } from '@/data/sampleGraphData';
-import type { GraphNode } from '@/types/graph';
+import type { GraphNode, GraphData } from '@/types/graph';
 
 interface GraphViewProps {
   showGraph: boolean;
   onClose: () => void;
+  graphData?: GraphData | null;
 }
 
-const GraphView: React.FC<GraphViewProps> = ({ showGraph, onClose }) => {
+const GraphView: React.FC<GraphViewProps> = ({ showGraph, onClose, graphData }) => {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   
   if (!showGraph) return null;
+
+  // Use actual graph data if available, otherwise fallback to sample data
+  const displayData = graphData || sampleGraphData;
+  const isUsingRealData = !!graphData;
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8">
@@ -26,8 +31,15 @@ const GraphView: React.FC<GraphViewProps> = ({ showGraph, onClose }) => {
         </button>
         
         <div className="flex-1 relative overflow-hidden">
+          {!isUsingRealData && (
+            <div className="absolute top-4 left-4 z-10 bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-3">
+              <p className="text-yellow-200 text-xs font-medium">
+                📊 Showing sample data - Run a query to generate your knowledge graph
+              </p>
+            </div>
+          )}
           <KnowledgeGraph 
-            data={sampleGraphData} 
+            data={displayData} 
             onNodeSelect={setSelectedNode}
           />
         </div>
@@ -53,7 +65,7 @@ const GraphView: React.FC<GraphViewProps> = ({ showGraph, onClose }) => {
                     <h3 className="text-white font-semibold text-sm leading-tight">{selectedNode.label}</h3>
                     <p className="text-white/60 text-xs">
                       {selectedNode.type} • {
-                        sampleGraphData.links.filter(link => {
+                        displayData.links.filter(link => {
                           const sourceId = typeof link.source === 'string' ? link.source : link.source.id;
                           const targetId = typeof link.target === 'string' ? link.target : link.target.id;
                           return sourceId === selectedNode.id || targetId === selectedNode.id;
@@ -95,15 +107,15 @@ const GraphView: React.FC<GraphViewProps> = ({ showGraph, onClose }) => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                  <span className="text-white/80 text-sm font-medium">{sampleGraphData.nodes.length} Nodes</span>
+                  <span className="text-white/80 text-sm font-medium">{displayData.nodes.length} Nodes</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                  <span className="text-white/80 text-sm font-medium">{sampleGraphData.links.length} Links</span>
+                  <span className="text-white/80 text-sm font-medium">{displayData.links.length} Links</span>
                 </div>
                 <div className="hidden md:flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-white/70 text-sm">Live Simulation</span>
+                  <div className={`w-2 h-2 rounded-full ${isUsingRealData ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+                  <span className="text-white/70 text-sm">{isUsingRealData ? 'Live Data' : 'Sample Data'}</span>
                 </div>
               </div>
               

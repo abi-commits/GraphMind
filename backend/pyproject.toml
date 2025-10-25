@@ -23,18 +23,16 @@ dependencies = [
     # Vector DB + Embeddings
     "chromadb>=0.4.0",
     "sentence-transformers>=2.2.2",
-    "openai>=1.0.0",
     # LangChain Ecosystem
     "langchain>=0.2.0",
     "langchain-core>=0.2.0",
     "langchain-community>=0.2.0",
-    "langchain-openai>=0.3.35",
+    "langchain-google-genai>=2.0.7",
     "langchain-huggingface>=0.0.3",
     "langgraph>=0.0.33",
     # Workflow Orchestration
     "inngest>=0.3.0",
     # Knowledge Graph
-    "networkx>=3.0",
     "pyvis>=0.3.1",
     # Backend API
     "fastapi>=0.110.0",
@@ -47,10 +45,10 @@ dependencies = [
     # AWS S3 Integration
     "boto3>=1.28.0",
     "botocore>=1.31.0",
-    "langchain-openai>=0.3.35",
     "redis>=7.0.0",
     "pytest>=8.4.2",
     "python-multipart>=0.0.20",
+    "langchain-chroma>=0.2.6",
 ]
 
 [project.optional-dependencies]
