@@ -164,36 +164,111 @@ const About = () => {
         style={{ zIndex: 0 }}
       />
       
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo onClick={() => navigate('/')} />
-          
-          <div className="hidden md:flex items-center gap-8">
-            <a href="/#features" className="text-sm text-white/70 hover:text-white transition-colors">
-              Features
-            </a>
-            <a href="/about" className="text-sm text-white hover:text-white transition-colors">
-              About
-            </a>
-            <a href="/contact" className="text-sm text-white/70 hover:text-white transition-colors">
-              Contact
-            </a>
-          </div>
+      {/* Floating Navigation */}
+      <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 hover:scale-105">
+        <div className="
+          glass rounded-full px-8 py-4 
+          shadow-2xl shadow-black/20 
+          backdrop-blur-xl bg-black/20 
+          border border-white/10 
+          hover:bg-black/30 hover:shadow-3xl hover:shadow-black/30
+          transition-all duration-300 ease-out
+        ">
+          <div className="flex items-center gap-12">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <Logo onClick={() => navigate('/')} />
+            </div>
+            
+            {/* Navigation Links */}
+            <div className="hidden lg:flex items-center gap-8">
+              <a href="/#features" className="
+                text-sm text-white/70 hover:text-white 
+                transition-colors duration-200 
+                px-3 py-2 rounded-lg hover:bg-white/10
+              ">
+                Features
+              </a>
+              <a href="/about" className="
+                text-sm text-white hover:text-white 
+                transition-colors duration-200 
+                px-3 py-2 rounded-lg bg-white/10
+              ">
+                About
+              </a>
+              <a href="/contact" className="
+                text-sm text-white/70 hover:text-white 
+                transition-colors duration-200 
+                px-3 py-2 rounded-lg hover:bg-white/10
+              ">
+                Contact
+              </a>
+            </div>
 
-          <div className="flex items-center gap-4">
+            {/* Auth Section */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <AuthConditional when="unauthenticated">
+                <div className="hidden sm:block">
+                  <LoginSignupButtons />
+                </div>
+              </AuthConditional>
+              <AuthConditional when="authenticated">
+                <div className="hidden sm:block">
+                  <AuthStatus />
+                </div>
+                <Button 
+                  size="sm"
+                  className="
+                    bg-white text-black hover:bg-white/90 
+                    transition-all duration-200 
+                    hover:scale-105 shadow-lg
+                  "
+                  onClick={() => navigate('/upload-and-query')}
+                >
+                  Dashboard
+                </Button>
+              </AuthConditional>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Navigation Fallback */}
+      <nav className="lg:hidden fixed top-4 right-4 z-50">
+        <div className="flex gap-2">
+          {/* Mobile Auth */}
+          <div className="
+            glass rounded-full p-3 
+            shadow-xl shadow-black/20 
+            backdrop-blur-xl bg-black/20 
+            border border-white/10 
+            hover:bg-black/30 hover:scale-105
+            transition-all duration-300 ease-out
+          ">
             <AuthConditional when="unauthenticated">
               <LoginSignupButtons />
             </AuthConditional>
             <AuthConditional when="authenticated">
-              <AuthStatus />
               <Button 
+                size="sm"
                 className="bg-white text-black hover:bg-white/90"
                 onClick={() => navigate('/upload-and-query')}
               >
                 Dashboard
               </Button>
             </AuthConditional>
+          </div>
+          
+          {/* Mobile Logo */}
+          <div className="
+            glass rounded-full p-3 
+            shadow-xl shadow-black/20 
+            backdrop-blur-xl bg-black/20 
+            border border-white/10 
+            hover:bg-black/30 hover:scale-105
+            transition-all duration-300 ease-out
+          ">
+            <Logo onClick={() => navigate('/')} />
           </div>
         </div>
       </nav>

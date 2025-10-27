@@ -1,74 +1,106 @@
 # 🧠 GraphMind
 
-Transform documents into interactive knowledge graphs you can query, visualize, and explore.
+Transform your documents into interactive, queryable, and visually engaging knowledge graphs.
 
-## What’s inside
+## Overview
+GraphMind is a mono-repo that combines the power of FastAPI, LangGraph, and modern frontend technologies to enable seamless document ingestion, processing, and visualization. With GraphMind, you can:
 
-This repo is a mono-repo with two apps:
+- Ingest and process documents (PDF, TXT, MD, and more).
+- Extract entities, relationships, and metrics using LLMs.
+- Store and query data with ChromaDB.
+- Visualize knowledge graphs in an intuitive React-based UI.
 
-- `backend/` – FastAPI + LangGraph service that ingests documents, chunks text, embeds into ChromaDB, extracts entities/relationships with LLMs, and serves REST APIs.
-- `frontend/` – Vite + React + TypeScript UI for uploading documents, running queries, and visualizing the knowledge graph.
-
-## Key features
-
-- Document ingestion for PDF/TXT/MD and more
-- Smart chunking (recursive/token strategies)
-- Semantic search with ChromaDB
-- Knowledge graph extraction using LLMs (entities + relationships + metrics)
-- Orchestrated pipelines with LangGraph
-- Clean REST API with background tasks
-
-## Architecture (high-level)
-
-1) Ingest file → validate → load → chunk → embed → store in ChromaDB
-2) Query → retrieve relevant chunks → extract entities/relationships → build graph → summarize
-3) Serve results via FastAPI endpoints; UI consumes these APIs
-
-## Quickstart
-
-Follow the dedicated READMEs for each app:
-
-- Backend: see `backend/README.md`
-- Frontend: see `frontend/README.md`
-
-Minimal flow to run both locally:
-
-1) Backend
-	 - Create `.env` in `backend/` (see sample in backend README)
-	 - Install deps and run the API
-
-2) Frontend
-	 - Create `frontend/.env` with `VITE_API_BASE_URL=http://localhost:8000/api/v1`
-	 - Install deps and start dev server
-
-## Project structure
+## Repository Structure
 
 ```
-backend/
-	src/
-		api/               # Pydantic models + FastAPI routes
-		components/
-			data_ingestion/  # Document loading
-			processing/      # Chunking, embeddings, vector store (Chroma)
-			knowledge_graph/ # Entity/relationship extraction, graph build
-		workflows/         # LangGraph state + nodes + workflow
-		config/            # Settings + logging
-	tests/               # Pytest test suite
-	main.py              # FastAPI app entrypoint
-
-frontend/
-	src/                 # React app (Vite + TS + Tailwind + shadcn)
-	vite.config.ts
-	package.json
+GraphMind/
+├── backend/       # Backend service built with FastAPI
+│   ├── src/       # Core backend logic
+│   │   ├── api/               # FastAPI routes and Pydantic models
+│   │   ├── components/        # Modular components for ingestion, processing, and graph building
+│   │   ├── workflows/         # LangGraph workflows and state management
+│   │   ├── config/            # Configuration and logging
+│   ├── tests/     # Pytest test suite
+│   └── main.py    # FastAPI app entrypoint
+├── frontend/      # Frontend application built with Vite + React + TypeScript
+│   ├── src/       # React components, hooks, and pages
+│   ├── vite.config.ts
+│   └── package.json
 ```
 
-## Links
+## Key Features
 
-- Backend README: `backend/README.md`
-- Frontend README: `frontend/README.md`
+### Backend
+- **Document Ingestion**: Supports multiple formats (PDF, TXT, MD, etc.).
+- **Smart Chunking**: Recursive and token-based strategies for text segmentation.
+- **Semantic Search**: Powered by ChromaDB for efficient retrieval.
+- **Knowledge Graph Extraction**: Entity and relationship extraction using LLMs.
+- **Orchestrated Pipelines**: Modular workflows with LangGraph.
+- **RESTful API**: Clean and scalable API endpoints.
+
+### Frontend
+- **Interactive UI**: Upload documents, run queries, and visualize knowledge graphs.
+- **Modern Stack**: Built with Vite, React, TypeScript, and TailwindCSS.
+- **Real-Time Updates**: Seamless integration with backend APIs.
+
+## Quickstart Guide
+
+### Prerequisites
+- **Backend**: Python 3.11, Redis, Docker (optional).
+- **Frontend**: Node.js (v16+), npm or yarn.
+
+### Running Locally
+
+#### Backend
+1. Navigate to the `backend/` directory.
+2. Create a `.env` file (refer to `backend/README.md` for required variables).
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Start the FastAPI server:
+   ```bash
+   uvicorn main:app --reload
+   ```
+
+#### Frontend
+1. Navigate to the `frontend/` directory.
+2. Create a `.env` file with the following content:
+   ```env
+   VITE_API_BASE_URL=http://localhost:8000/api/v1
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Access the Application
+- **Backend**: API documentation available at `http://localhost:8000/docs`.
+- **Frontend**: Open `http://localhost:5173` in your browser.
+
+## Deployment
+
+GraphMind is designed for deployment on modern platforms:
+- **Frontend**: Deploy on Vercel for seamless CI/CD.
+- **Backend**: Deploy on Render with Redis for task management.
+
+Refer to the `docs/DEPLOYMENT.md` for detailed instructions.
+
+## Additional Resources
+
+- **Backend Documentation**: [backend/README.md](backend/README.md)
+- **Frontend Documentation**: [frontend/README.md](frontend/README.md)
+- **Redis Optimization**: [docs/REDIS_OPTIMIZATION.md](docs/REDIS_OPTIMIZATION.md)
 
 ## Notes
+- LLM-powered features require an API key. Refer to `backend/README.md` for environment variable setup.
+- ChromaDB supports both embedded (persistent client) and remote configurations.
 
-- LLM-powered features require an API key (see backend README environment variables).
-- ChromaDB can run embedded (persistent client) or remote via HTTP client.
+---
+
+Crafted with ❤️ by the GraphMind team.
 

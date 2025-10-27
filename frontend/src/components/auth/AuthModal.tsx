@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Google Icon component
 const GoogleIcon = () => (
@@ -47,12 +48,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const { signInWithGoogle, signInWithGithub, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleGoogleAuth = async () => {
     try {
       setError(null);
       await signInWithGoogle();
       setIsOpen(false);
+      // Navigate to dashboard after successful sign in
+      navigate('/upload-and-query');
     } catch (error: any) {
       setError(error.message || 'Authentication failed');
     }
@@ -63,6 +67,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setError(null);
       await signInWithGithub();
       setIsOpen(false);
+      // Navigate to dashboard after successful sign in
+      navigate('/upload-and-query');
     } catch (error: any) {
       setError(error.message || 'Authentication failed');
     }

@@ -113,6 +113,7 @@ const Workspace = () => {
         onUploadClick={handleUploadClick}
         onToggleStar={toggleStar}
         onPreviewDocument={handlePreviewDocument}
+        onQueryDocument={handleQueryDocument}
         fileInputRef={fileInputRef}
         onFilesChange={handleFilesChange}
         isCollapsed={isCollapsed}

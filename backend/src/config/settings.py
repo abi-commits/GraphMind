@@ -67,5 +67,15 @@ class Settings(BaseSettings):
     REDIS_PORT: int = 6379
     REDIS_PASSWORD: str = ""
     REDIS_DB: int = 0
+    
+    # CORS settings
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",  # React default
+        "http://localhost:5173",  # Vite default
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
+        "https://*.vercel.app",   # Vercel deployments
+        "https://*.netlify.app",  # Netlify deployments (fallback)
+    ]
 
 settings = Settings()

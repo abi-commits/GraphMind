@@ -53,6 +53,9 @@ All colors MUST be HSL.
     --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.3);
     --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.4);
     --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.5);
+    --shadow-xl: 0 12px 48px hsl(0 0% 0% / 0.6);
+    --shadow-2xl: 0 16px 64px hsl(0 0% 0% / 0.7);
+    --shadow-3xl: 0 24px 80px hsl(0 0% 0% / 0.8);
     --shadow-glow: 0 0 24px hsl(0 0% 100% / 0.15);
   }
 }
@@ -98,6 +101,11 @@ All colors MUST be HSL.
   /* Text glow */
   .text-glow {
     text-shadow: 0 0 20px hsl(0 0% 100% / 0.3);
+  }
+
+  /* Enhanced shadow utilities */
+  .shadow-3xl {
+    box-shadow: var(--shadow-3xl);
   }
 
   /* Noise texture */

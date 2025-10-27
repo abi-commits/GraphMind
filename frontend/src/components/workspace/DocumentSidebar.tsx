@@ -21,6 +21,7 @@ interface DocumentSidebarProps {
   onDragLeave?: (e: React.DragEvent) => void;
   onDragOver?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent) => void;
+  onQueryDocument?: (documentName: string) => void;
 }
 
 const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
@@ -41,7 +42,13 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
   onDragLeave,
   onDragOver,
   onDrop
+  , onQueryDocument
 }) => {
+  const [openMenuId, setOpenMenuId] = React.useState<number | null>(null);
+
+  const toggleMenu = (id: number | null) => {
+    setOpenMenuId(prev => prev === id ? null : id);
+  };
   return (
     <div 
       className={`${
@@ -245,7 +252,12 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                       >
                         <Eye className="w-4 h-4 text-white/40 hover:text-white/60" />
                       </button>
-                      <button className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleMenu(doc.id); }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-haspopup="true"
+                        aria-expanded={openMenuId === doc.id}
+                      >
                         <MoreVertical className="w-4 h-4 text-white/40" />
                       </button>
                     </div>
@@ -290,10 +302,32 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                       </button>
                     </div>
                   ) : (
-                    <button className="w-full mt-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-xs font-medium transition-all duration-300 hover:scale-105">
-                      Query This Document
-                    </button>
-                  )}
+                      <div className="relative">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onQueryDocument?.(doc.name); }}
+                          className="w-full mt-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-xs font-medium transition-all duration-300 hover:scale-105"
+                        >
+                          Query This Document
+                        </button>
+                        {/* Floating per-item menu (small) */}
+                        {openMenuId === doc.id && (
+                          <div className="absolute right-2 top-[-6rem] w-44 bg-black/90 border border-white/10 rounded-md shadow-lg p-2 z-40">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onPreviewDocument(doc); toggleMenu(null); }}
+                              className="w-full text-left px-2 py-2 text-sm hover:bg-white/5 rounded"
+                            >Preview</button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onQueryDocument?.(doc.name); toggleMenu(null); }}
+                              className="w-full text-left px-2 py-2 text-sm hover:bg-white/5 rounded"
+                            >Query Document</button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(window.location.href); toggleMenu(null); }}
+                              className="w-full text-left px-2 py-2 text-sm hover:bg-white/5 rounded"
+                            >Copy Link</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                 </div>
               ))
             )}

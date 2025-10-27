@@ -157,6 +157,7 @@ Thumbs.db
 # Data and model files
 data/
 models/
+docs/
 *.pdf
 *.pkl
 *.joblib

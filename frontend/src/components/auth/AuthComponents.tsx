@@ -10,6 +10,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Google Icon component
 const GoogleIcon = () => (
@@ -37,11 +38,14 @@ const GoogleIcon = () => (
 export const LoginForm: React.FC = () => {
   const { signInWithGoogle, signInWithGithub, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleGoogleSignIn = async () => {
     try {
       setError(null);
       await signInWithGoogle();
+      // Navigate to dashboard after successful sign in
+      navigate('/upload-and-query');
     } catch (error: any) {
       setError(error.message || 'Failed to authenticate with Google');
     }
@@ -51,6 +55,8 @@ export const LoginForm: React.FC = () => {
     try {
       setError(null);
       await signInWithGithub();
+      // Navigate to dashboard after successful sign in
+      navigate('/upload-and-query');
     } catch (error: any) {
       setError(error.message || 'Failed to authenticate with GitHub');
     }
@@ -173,6 +179,7 @@ export const AuthStatus: React.FC = () => {
 // Simple Login/Signup Button
 export const LoginButton: React.FC = () => {
   const { user, signInWithGoogle, loading } = useAuth();
+  const navigate = useNavigate();
 
   if (user) {
     return <UserProfile />;
@@ -181,6 +188,8 @@ export const LoginButton: React.FC = () => {
   const handleSignIn = async () => {
     try {
       await signInWithGoogle();
+      // Navigate to dashboard after successful sign in
+      navigate('/upload-and-query');
     } catch (error) {
       console.error('Authentication failed:', error);
     }
