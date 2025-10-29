@@ -27,3 +27,6 @@ app = create_app()
 async def root():
 	return {"name": settings.APP_NAME, "status": "ok", "api": settings.API_PREFIX}
 
+if __name__ == "__main__":
+	import uvicorn
+	uvicorn.run(app, host="0.0.0.0", port=8000)

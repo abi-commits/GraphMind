@@ -53,12 +53,17 @@ GraphMind/
 
 #### Backend
 1. Navigate to the `backend/` directory.
-2. Create a `.env` file (refer to `backend/README.md` for required variables).
-3. Install dependencies:
+2. Create and activate a virtual environment:
    ```bash
-   pip install -r requirements.txt
+   python -m venv .venv
+   source .venv/bin/activate
    ```
-4. Start the FastAPI server:
+3. Create a `.env` file (refer to `backend/README.md` for required variables).
+4. Install dependencies in editable mode:
+   ```bash
+   pip install -e .
+   ```
+5. Start the FastAPI server:
    ```bash
    uvicorn main:app --reload
    ```
