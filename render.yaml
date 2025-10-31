@@ -1,7 +1,7 @@
 services:
   - type: web
     name: graphmind-backend
-    env: python
+    runtime: python
     rootDir: backend
-    buildCommand: "pip install uv==0.7.12 && uv sync --frozen"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    buildCommand: uv sync --active
+    startCommand: uv run uvicorn src.main:app --host 0.0.0.0 --port $PORT
