@@ -18,7 +18,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.13.5'
 
       - name: Install Dependencies
         run: |
@@ -29,10 +29,3 @@ jobs:
       - name: Run Tests
         run: |
           uv run pytest tests/ -v
-
-      - name: Deploy to Render
-        if: success()
-        uses: johnbeynon/render-deploy-action@v0.0.8
-        with:
-          service-id: ${{ secrets.RENDER_SERVICE_ID }}
-          api-key: ${{ secrets.RENDER_API_KEY }}
