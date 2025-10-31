@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: graphmind-backend
-    runtime: python
-    rootDir: backend
-    buildCommand: uv sync --active
-    startCommand: uv run uvicorn src.main:app --host 0.0.0.0 --port $PORT
