@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Network, X } from 'lucide-react';
 import KnowledgeGraph from '@/components/graph/KnowledgeGraph';
-import { sampleGraphData } from '@/data/sampleGraphData';
 import type { GraphNode, GraphData } from '@/types/graph';
 
 interface GraphViewProps {
@@ -15,9 +14,34 @@ const GraphView: React.FC<GraphViewProps> = ({ showGraph, onClose, graphData }) 
   
   if (!showGraph) return null;
 
-  // Use actual graph data if available, otherwise fallback to sample data
-  const displayData = graphData || sampleGraphData;
-  const isUsingRealData = !!graphData;
+  // Show empty state if no graph data
+  if (!graphData || !graphData.nodes || graphData.nodes.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8">
+        <div className="w-full max-w-6xl h-5/6 bg-black/60 backdrop-blur-xl border border-white/20 rounded-2xl flex flex-col relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 p-2 hover:bg-white/10 rounded-lg transition-all duration-300"
+          >
+            <X className="w-5 h-5 text-white/60 hover:text-white" />
+          </button>
+          
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <Network className="w-16 h-16 text-white/30 mx-auto" />
+              <h3 className="text-xl font-semibold text-white/80">No Knowledge Graph Available</h3>
+              <p className="text-white/60 max-w-md">
+                Upload documents and run a query to generate your knowledge graph visualization.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const displayData = graphData;
+  const isUsingRealData = true;
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-8">
@@ -31,13 +55,6 @@ const GraphView: React.FC<GraphViewProps> = ({ showGraph, onClose, graphData }) 
         </button>
         
         <div className="flex-1 relative overflow-hidden">
-          {!isUsingRealData && (
-            <div className="absolute top-4 left-4 z-10 bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-3">
-              <p className="text-yellow-200 text-xs font-medium">
-                📊 Showing sample data - Run a query to generate your knowledge graph
-              </p>
-            </div>
-          )}
           <KnowledgeGraph 
             data={displayData} 
             onNodeSelect={setSelectedNode}
@@ -112,10 +129,6 @@ const GraphView: React.FC<GraphViewProps> = ({ showGraph, onClose, graphData }) 
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
                   <span className="text-white/80 text-sm font-medium">{displayData.links.length} Links</span>
-                </div>
-                <div className="hidden md:flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${isUsingRealData ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
-                  <span className="text-white/70 text-sm">{isUsingRealData ? 'Live Data' : 'Sample Data'}</span>
                 </div>
               </div>
               

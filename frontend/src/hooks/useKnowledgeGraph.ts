@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GraphData } from '@/types/graph';
-import { sampleGraphData } from '@/data/sampleGraphData';
 import { useToast } from '@/hooks/use-toast';
 import { apiClient } from '@/lib/api';
 
