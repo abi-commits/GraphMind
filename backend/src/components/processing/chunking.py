@@ -83,9 +83,3 @@ def create_chunker(strategy: str = "recursive") -> Chunker:
     return Chunker(factory=factories[strategy])
 
 
-# --- Example Usage ---
-if __name__ == "__main__":
-    chunker = create_chunker("recursive")
-    text_chunks = chunker.chunk_text("This is some sample text to chunk.")
-    print(text_chunks)
-

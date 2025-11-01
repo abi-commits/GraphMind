@@ -63,10 +63,8 @@ class Settings(BaseSettings):
     S3_BUCKET_NAME: str = ""
 
     # Redis settings
-    REDIS_HOST: str = "localhost"
-    REDIS_PORT: int = 6379
-    REDIS_PASSWORD: str = ""
-    REDIS_DB: int = 0
+    REDIS_URL: str = ""
+  
     
     # CORS settings
     CORS_ORIGINS: list[str] = [
