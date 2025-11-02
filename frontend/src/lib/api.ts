@@ -6,7 +6,11 @@
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_PREFIX = '/api/v1';
-const BASE_URL = `${API_BASE_URL}${API_PREFIX}`;
+
+// Check if the base URL already includes the API prefix to avoid double slashes
+const BASE_URL = API_BASE_URL.endsWith(API_PREFIX) 
+  ? API_BASE_URL 
+  : `${API_BASE_URL}${API_PREFIX}`;
 
 // Types
 export interface ApiResponse<T> {

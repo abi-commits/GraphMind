@@ -5,7 +5,14 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+// Use the same API URL as api.ts for consistency
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_PREFIX = '/api/v1';
+
+// Check if the base URL already includes the API prefix
+const BASE_URL = API_BASE_URL.endsWith(API_PREFIX) 
+  ? API_BASE_URL 
+  : `${API_BASE_URL}${API_PREFIX}`;
 
 interface UploadResponse {
   success: boolean;
@@ -44,7 +51,7 @@ export const uploadDocumentToS3 = async (
     formData.append('file', file);
 
     const response = await axios.post<UploadResponse>(
-      `${API_BASE_URL}/documents/upload`,
+      `${BASE_URL}/documents/upload`,
       formData,
       {
         headers: {
@@ -79,7 +86,7 @@ export const uploadDocumentToS3 = async (
 export const deleteDocumentFromS3 = async (s3Key: string): Promise<boolean> => {
   try {
     const response = await axios.delete<DeleteResponse>(
-      `${API_BASE_URL}/documents/${encodeURIComponent(s3Key)}`
+      `${BASE_URL}/documents/${encodeURIComponent(s3Key)}`
     );
     return response.data.success;
   } catch (error) {
@@ -100,7 +107,7 @@ export const getPresignedUrl = async (
 ): Promise<string> => {
   try {
     const response = await axios.get<UrlResponse>(
-      `${API_BASE_URL}/documents/url/${encodeURIComponent(s3Key)}`,
+      `${BASE_URL}/documents/url/${encodeURIComponent(s3Key)}`,
       {
         params: { expiration },
       }
