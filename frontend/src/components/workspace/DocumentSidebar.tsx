@@ -64,9 +64,10 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
       {/* GraphMind Logo Header with Separate Toggle */}
       <div className="p-6 border-b border-white/5">
         <div className="flex items-center justify-between">
-          {isCollapsed ? (
+            {isCollapsed ? (
             /* Collapsed State - Show toggle icon only */
             <button 
+              type="button"
               onClick={onToggleSidebar}
               className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
               title="Expand Sidebar"
@@ -85,6 +86,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
               </div>
               <div className="flex gap-2 ml-4">
                 <button 
+                  type="button"
                   onClick={onNewChatSession}
                   className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 hover:scale-105"
                   title="New Chat Session"
@@ -92,6 +94,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                   <MessageSquarePlus className="w-4 h-4" />
                 </button>
                 <button 
+                  type="button"
                   onClick={onToggleSidebar}
                   className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 hover:scale-105"
                   title="Collapse Sidebar"
@@ -128,6 +131,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
               {['all', 'recent', 'starred'].map(filter => (
                 <button
                   key={filter}
+                  type="button"
                   onClick={() => setActiveFilter(filter)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${
                     activeFilter === filter 
@@ -200,6 +204,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                 </p>
                 
                 <button 
+                  type="button"
                   onClick={onUploadClick}
                   className="group flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105"
                 >
@@ -223,6 +228,10 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
               filteredDocs.map(doc => (
                 <div
                   key={doc.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onPreviewDocument(doc)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPreviewDocument(doc); } }}
                   className="group p-4 bg-white/3 border border-white/15 rounded-lg hover:bg-white/5 hover:border-white/30 transition-all duration-300 hover:translate-x-1 cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -235,15 +244,18 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           onToggleStar(doc.id);
                         }}
+                        aria-pressed={doc.starred}
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Star className={`w-4 h-4 ${doc.starred ? 'fill-white text-white' : 'text-white/40'}`} />
                       </button>
                       <button 
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           onPreviewDocument(doc);
@@ -253,6 +265,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                         <Eye className="w-4 h-4 text-white/40 hover:text-white/60" />
                       </button>
                       <button
+                        type="button"
                         onClick={(e) => { e.stopPropagation(); toggleMenu(doc.id); }}
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                         aria-haspopup="true"
@@ -295,6 +308,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                         Processing failed
                       </div>
                       <button 
+                        type="button"
                         onClick={() => window.location.reload()}
                         className="w-full px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 rounded text-xs font-medium text-red-300 transition-all duration-300"
                       >
@@ -317,10 +331,12 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
                               className="w-full text-left px-2 py-2 text-sm hover:bg-white/5 rounded"
                             >Preview</button>
                             <button
+                              type="button"
                               onClick={(e) => { e.stopPropagation(); onQueryDocument?.(doc.name); toggleMenu(null); }}
                               className="w-full text-left px-2 py-2 text-sm hover:bg-white/5 rounded"
                             >Query Document</button>
                             <button
+                              type="button"
                               onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(window.location.href); toggleMenu(null); }}
                               className="w-full text-left px-2 py-2 text-sm hover:bg-white/5 rounded"
                             >Copy Link</button>

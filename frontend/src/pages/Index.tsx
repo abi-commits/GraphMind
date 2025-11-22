@@ -30,6 +30,36 @@ const Index = () => {
       {/* Hero Section */}
       <HeroCinematic />
 
+      {/* Landing image preview — centered image with CTAs below */}
+      <section className="py-12 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="glass p-8 rounded-2xl text-center">
+            <div className="relative group overflow-hidden rounded-lg">
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-500 pointer-events-none" />
+              <img
+                src="/assets/kgraph.png"
+                alt="Knowledge graph preview"
+                loading="lazy"
+                className="w-full max-w-4xl mx-auto h-64 md:h-80 lg:h-96 object-cover rounded-lg shadow-2xl transform transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+              <div className="absolute left-4 bottom-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 blur-lg opacity-30" />
+              </div>
+            </div>
+
+            <h3 className="text-3xl font-semibold mt-6 animate-fade-in">Explore automatically generated knowledge graphs</h3>
+            <p className="text-sm text-white/70 mt-2 mb-4">Visualize entities, concepts and their relationships extracted from your documents. Interactively explore connections and surface insights from your knowledge base.</p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
+              <Button size="sm" className="px-6 py-3 transform transition-transform duration-300 hover:-translate-y-1 hover:scale-105" onClick={() => navigate('/upload-and-query')}>Get Started</Button>
+              <Button size="sm" variant="outline" className="px-6 py-3 transform transition-transform duration-300 hover:-translate-y-1 hover:scale-105" onClick={() => navigate('/about')}>Learn More</Button>
+            </div>
+
+            <div className="mt-4 text-xs text-white/50">Tip: Upload a document and run a query to auto-generate an interactive knowledge graph.</div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <div id="features">
         <Features3D />

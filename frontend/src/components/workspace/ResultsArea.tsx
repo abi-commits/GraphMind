@@ -2,6 +2,35 @@ import React from 'react';
 import { Search, FileText, Network, Sparkles, Brain, Eye, Copy } from 'lucide-react';
 import { QueryResult } from '@/hooks/useQuery';
 
+// Simple HTML-escape to avoid injection when using innerHTML
+const escapeHtml = (str: string) =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+// Lightweight converter: **bold** -> <strong>, preserve paragraph breaks and single newlines
+const renderSummaryHtml = (text: string) => {
+  if (!text) return '';
+  const normalized = text.replace(/\r\n/g, '\n');
+  // Escape first
+  let html = escapeHtml(normalized);
+  // Bold **text** -> <strong>
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  // Split paragraphs on empty lines and convert single newlines to <br/>
+  const paragraphs = html
+    .split(/\n\s*\n/) // double newline -> paragraph
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `<p>${p.replace(/\n/g, '<br/>')}</p>`)
+    .join('');
+
+  return paragraphs;
+};
+
 interface ResultsAreaProps {
   results: QueryResult[];
   summary?: string;
@@ -119,88 +148,41 @@ const ResultsArea: React.FC<ResultsAreaProps> = ({
                 <Brain className="w-5 h-5 text-purple-400" />
                 <h3 className="text-lg font-semibold text-white">AI Summary</h3>
               </div>
-              <button
-                onClick={() => navigator.clipboard.writeText(summary)}
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                title="Copy summary"
-              >
-                <Copy className="w-4 h-4 text-white/60" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigator.clipboard.writeText(summary)}
+                  className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                  title="Copy summary"
+                >
+                  <Copy className="w-4 h-4 text-white/60" />
+                </button>
+
+                <button
+                  onClick={onShowGraph}
+                  className="px-3 py-1.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-400/30 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2"
+                  title={showGraph ? 'Hide Knowledge Graph' : 'View Knowledge Graph'}
+                >
+                  <Network className="w-4 h-4" />
+                  <span className="hidden sm:inline">{showGraph ? 'Hide' : 'View'}</span>
+                </button>
+              </div>
             </div>
-            <p className="text-white/80 leading-relaxed">{summary}</p>
+
+            {/* Render a lightly-processed markdown-like summary for readability */}
+            <div className="prose prose-invert text-white/80 leading-relaxed max-w-none">
+              <div
+                dangerouslySetInnerHTML={{ __html: renderSummaryHtml(summary) }}
+              />
+            </div>
           </div>
         )}
 
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Search className="w-6 h-6 text-blue-400" />
-            Results
-          </h2>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-white/40">Found {results.length} results</span>
-            <button 
-              onClick={onShowGraph}
-              className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-400/30 hover:border-purple-400/50 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2"
-            >
-              <Network className="w-4 h-4" />
-              {showGraph ? 'Hide' : 'View'} Knowledge Graph
-            </button>
+        {/* Only show AI summary per request. Results list hidden. */}
+        {!summary && (
+          <div className="p-6 bg-white/3 border border-white/10 rounded-xl text-center">
+            <p className="text-white/60">AI summary is not available for this query.</p>
           </div>
-        </div>
-
-        <div className="space-y-4">
-          {results.map((result, index) => (
-            <div
-              key={result.id}
-              className="group p-6 bg-gradient-to-r from-white/3 to-white/1 border border-white/15 rounded-xl hover:from-white/5 hover:to-white/3 hover:border-white/30 transition-all duration-300 hover:translate-x-2 hover:shadow-lg hover:shadow-white/5"
-              style={{
-                animationDelay: `${index * 100}ms`,
-              }}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                    <h3 className="text-lg font-semibold">{result.title}</h3>
-                  </div>
-                  <p className="text-white/70 leading-relaxed">{result.excerpt}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-                <div className="flex items-center gap-4 text-sm text-white/50">
-                  <span className="flex items-center gap-1.5">
-                    <FileText className="w-4 h-4" />
-                    {result.source}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    Page {result.page}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs text-white/40">Relevance</div>
-                    <div className="h-1.5 w-20 bg-white/10 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-500"
-                        style={{ width: `${result.relevance}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-mono text-white/60 min-w-[3ch]">{result.relevance}%</span>
-                  </div>
-                  <button className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 rounded-lg text-xs font-medium text-blue-200 transition-all duration-300 hover:scale-105">
-                    View Full
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-          
-          <button className="w-full mt-6 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/40 rounded-xl text-sm font-medium transition-all duration-300">
-            Load more results
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );

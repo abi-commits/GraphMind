@@ -32,6 +32,10 @@ class RecursiveSplitterFactory(SplitterFactory):
 
 class TokenSplitterFactory(SplitterFactory):
     def create_splitter(self):
+        if not settings.EMBEDDING_MODEL:
+            raise GraphMindException(
+                "Token-based chunking requires EMBEDDING_MODEL to be configured (local tiktoken usage)."
+            )
         return TokenTextSplitter(
             chunk_size=settings.CHUNK_SIZE,
             chunk_overlap=settings.CHUNK_OVERLAP,

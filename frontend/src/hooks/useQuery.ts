@@ -36,7 +36,7 @@ export const useQuery = () => {
   const [isQuerying, setIsQuerying] = useState(false);
   const { toast } = useToast();
 
-  const handleQuery = async (documentsCount: number) => {
+  const handleQuery = async (documentsCount: number, filePath?: string) => {
     if (!query.trim()) {
       toast({
         title: "⚠️ Empty Query",
@@ -66,7 +66,8 @@ export const useQuery = () => {
         query: query.trim(),
         top_k: 5,
         include_summary: true,
-        include_knowledge_graph: true
+        include_knowledge_graph: true,
+        file_path: filePath
       };
 
       const response: QueryResponse = await apiClient.queryDocuments(queryRequest);
@@ -94,6 +95,9 @@ export const useQuery = () => {
           title: "✨ Results Found",
           description: `Found ${queryResults.length} relevant results for your query.`,
         });
+
+        // Return visualization data so callers can immediately use it
+        return response.visualization_data || null;
       } else {
         throw new Error(response.error || 'Query failed');
       }
@@ -115,6 +119,7 @@ export const useQuery = () => {
     } finally {
       setIsQuerying(false);
     }
+    return null;
   };
 
   return {

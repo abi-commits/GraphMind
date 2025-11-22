@@ -1,13 +1,10 @@
 from typing import List, Optional, Dict, Any
 import chromadb
-from chromadb.config import Settings as ChromaSettings
 from langchain_core.documents import Document
-from langchain_chroma import Chroma
 from abc import ABC, abstractmethod
 
 from src.config.settings import settings
 from src.config.logging import GraphMindException, logging
-from src.components.processing.embeddings import EmbeddingGenerator
 
 
 class VectorStore(ABC):
@@ -28,19 +25,24 @@ class VectorStore(ABC):
 
 
 class ChromaVectorStore(VectorStore):
-    client: 'Optional[Any]' = None
-    vector_store: 'Optional[Chroma]' = None
-    def __init__(self, embedding_generator: Optional[EmbeddingGenerator] = None) -> None:
+    """ChromaDB Cloud vector store - production ready with cloud-managed embeddings."""
+    
+    client: Optional[Any] = None
+    vector_store: Optional[Any] = None
+    
+    def __init__(self) -> None:
+        """Initialize ChromaDB Cloud vector store."""
         self.collection_name = settings.CHROMA_COLLECTION_NAME
         self.client = None
         self.vector_store = None
-        self.embedding_generator = embedding_generator
         
-        # For ChromaDB Cloud, we don't need a local embedding generator
-        if settings.CHROMA_USE_CLOUD:
-            logging.info("ChromaDB Cloud mode: Using cloud-based embedding service")
-        elif embedding_generator is None:
-            raise GraphMindException("Embedding generator is required for non-cloud deployments")
+        if not settings.CHROMA_USE_CLOUD:
+            raise GraphMindException("Only ChromaDB Cloud mode is supported in production")
+        
+        if not settings.CHROMA_API_KEY:
+            raise GraphMindException("CHROMA_API_KEY is required for ChromaDB Cloud")
+            
+        logging.info("ChromaDB Cloud mode: Using cloud-based embedding service")
         
         try:
             self._initialize_vector_store()
@@ -49,103 +51,52 @@ class ChromaVectorStore(VectorStore):
             raise
 
     def _initialize_vector_store(self) -> None:
-        """Initialize ChromaDB client and vector store."""
+        """Initialize ChromaDB Cloud client and vector store."""
         try:
+            # ChromaDB Cloud client
+            self.client = chromadb.CloudClient(
+                api_key=settings.CHROMA_API_KEY,
+                tenant=settings.CHROMA_TENANT,
+                database=settings.CHROMA_DATABASE
+            )
+            logging.info(f"Connected to ChromaDB Cloud - Tenant: {settings.CHROMA_TENANT}, Database: {settings.CHROMA_DATABASE}")
             
-            if settings.CHROMA_USE_CLOUD and settings.CHROMA_API_KEY:
-                # ChromaDB Cloud client
-                self.client = chromadb.CloudClient(
-                    api_key=settings.CHROMA_API_KEY,
-                    tenant=settings.CHROMA_TENANT,
-                    database=settings.CHROMA_DATABASE
-                )
-                logging.info(f"Connected to ChromaDB Cloud - Tenant: {settings.CHROMA_TENANT}, Database: {settings.CHROMA_DATABASE}")
-                self.collection_name = settings.CHROMA_COLLECTION_NAME
-                
-            elif settings.CHROMA_HOST and settings.CHROMA_PORT and not settings.CHROMA_USE_CLOUD:
-                # Remote server (self-hosted)
-                self.client = chromadb.HttpClient(
-                    host=settings.CHROMA_HOST,
-                    port=settings.CHROMA_PORT
-                )
-                logging.info(f"Connected to ChromaDB server at {settings.CHROMA_HOST}:{settings.CHROMA_PORT}")
-            else:
-                # Local persistent storage
-                self.client = chromadb.PersistentClient(
-                    path=settings.VECTOR_STORE_PATH
-                )
-                logging.info(f"Using local ChromaDB at {settings.VECTOR_STORE_PATH}")
+            try:
+                from langchain_chroma import Chroma  # type: ignore
 
-            # Initialize Chroma with newer version parameters
-            if settings.CHROMA_USE_CLOUD:
-                # ChromaDB Cloud handles embeddings automatically for ingestion, 
-                # but langchain-chroma still needs an embedding function for queries
-                # We'll use a lightweight embedding function for query compatibility
-                if self.embedding_generator is None:
-                    from src.components.processing.embeddings import EmbeddingGenerator
-                    self.embedding_generator = EmbeddingGenerator()
-                    logging.info("Created embedding generator for ChromaDB Cloud query compatibility")
-                
+                # Initialize Chroma vector store - Cloud handles all embeddings
                 self.vector_store = Chroma(
                     client=self.client,
                     collection_name=self.collection_name,
-                    embedding_function=self.embedding_generator,
                 )
-                logging.info("Using ChromaDB Cloud with built-in embedding service")
-            elif settings.CHROMA_HOST and settings.CHROMA_PORT and not settings.CHROMA_USE_CLOUD:
-                # For remote server, use local embedding function
-                if self.embedding_generator is None:
-                    raise GraphMindException("Embedding generator is required for remote server deployment")
-                
-                try:
-                    test_result = self.embedding_generator(["test"])
-                    logging.debug(f"Embedding generator test successful")
-                except Exception as e:
-                    logging.error(f"Embedding generator is not properly callable: {e}")
-                    raise GraphMindException(f"Embedding generator is not properly callable: {e}")
-                
-                self.vector_store = Chroma(
-                    client=self.client,
-                    collection_name=self.collection_name,
-                    embedding_function=self.embedding_generator,
-                )
-            else:
-                # For local storage, use local embedding function
-                if self.embedding_generator is None:
-                    raise GraphMindException("Embedding generator is required for local storage deployment")
-                
-                try:
-                    test_result = self.embedding_generator(["test"])
-                    logging.debug(f"Embedding generator test successful")
-                except Exception as e:
-                    logging.error(f"Embedding generator is not properly callable: {e}")
-                    raise GraphMindException(f"Embedding generator is not properly callable: {e}")
-                
-                self.vector_store = Chroma(
-                    client=self.client,
-                    collection_name=self.collection_name,
-                    embedding_function=self.embedding_generator,
-                    persist_directory=settings.VECTOR_STORE_PATH
+                logging.info(f"ChromaDB Cloud vector store (langchain wrapper) initialized successfully with collection '{self.collection_name}'")
+            except Exception as e:
+                # LangChain wrapper or optional deps not available; continue with client-only mode
+                self.vector_store = None
+                logging.warning(
+                    f"LangChain Chroma wrapper not available; falling back to chromadb client-only mode. Some features (add/query) may be limited: {e}"
                 )
             
-            logging.info(f"ChromaDB vector store initialized successfully with collection '{self.collection_name}'")
         except Exception as e:
             # Reset client and vector_store on failure
             self.client = None
             self.vector_store = None
-            logging.error(f"Error initializing ChromaDB: {e}")
-            raise GraphMindException(f"Error initializing ChromaDB: {e}")
+            logging.error(f"Error initializing ChromaDB Cloud: {e}")
+            raise GraphMindException(f"Error initializing ChromaDB Cloud: {e}")
 
-    def _check_initialized(self) -> None:
-        """Check if the vector store is properly initialized."""
-        if self.client is None or self.vector_store is None:
-            logging.error("ChromaDB is not initialized. self.client or self.vector_store is None.")
-            raise GraphMindException("ChromaDB is not initialized. Please check your configuration and logs for details.")
+    def _check_client_initialized(self) -> None:
+        """Ensure the ChromaDB client is initialized. LangChain wrapper may be optional."""
+        if self.client is None:
+            logging.error("ChromaDB client is not initialized.")
+            raise GraphMindException("ChromaDB client is not initialized. Please check CHROMA_API_KEY, CHROMA_TENANT and network connectivity.")
     
 
     def add_documents(self, documents: List[Document]) -> None:
-        self._check_initialized()
-        assert self.vector_store is not None
+        self._check_client_initialized()
+        if self.vector_store is None:
+            raise GraphMindException(
+                "LangChain Chroma wrapper is not available in this runtime. Install 'langchain-chroma' and its optional deps (or enable local embedding generator) to use add/query features."
+            )
         try:
             if not documents:
                 logging.warning("No documents to add")
@@ -159,8 +110,11 @@ class ChromaVectorStore(VectorStore):
             raise GraphMindException(f"Error adding documents to ChromaDB: {e}")
 
     def query(self, query: str, top_k: int = 5, filter: Optional[dict] = None) -> List[Document]:
-        self._check_initialized()
-        assert self.vector_store is not None
+        self._check_client_initialized()
+        if self.vector_store is None:
+            raise GraphMindException(
+                "LangChain Chroma wrapper is not available in this runtime. Install 'langchain-chroma' and its optional deps to enable query functionality."
+            )
         try:
             if not query.strip():
                 logging.warning("Empty query provided")
@@ -178,7 +132,8 @@ class ChromaVectorStore(VectorStore):
             raise GraphMindException(f"Error querying ChromaDB: {e}")
 
     def get_collection_stats(self) -> Dict[str, Any]:
-        self._check_initialized()
+        # Only require the chromadb client for stats; LangChain wrapper optional
+        self._check_client_initialized()
         assert self.client is not None
         try:
             # Try to get the collection using the client
@@ -209,8 +164,11 @@ class ChromaVectorStore(VectorStore):
                 raise GraphMindException(f"Error getting collection stats: {e}")
 
     def delete_documents(self, ids: Optional[List[str]] = None, where: Optional[dict] = None) -> None:
-        self._check_initialized()
-        assert self.vector_store is not None
+        self._check_client_initialized()
+        if self.vector_store is None:
+            raise GraphMindException(
+                "LangChain Chroma wrapper is not available in this runtime. Install 'langchain-chroma' to enable delete functionality."
+            )
         try:
             if ids is not None:
                 self.vector_store.delete(ids=ids)
@@ -227,11 +185,11 @@ class ChromaVectorStore(VectorStore):
             raise GraphMindException(f"Error deleting documents: {e}")
 
     def health_check(self) -> Dict[str, Any]:
-        """Check the health of the vector store."""
+        """Check the health of the ChromaDB Cloud vector store."""
         try:
-            # Check if initialized
-            if self.client is None or self.vector_store is None:
-                return {"status": "unhealthy", "error": "Vector store not initialized"}
+            # Require at least the client to be initialized
+            if self.client is None:
+                return {"status": "unhealthy", "error": "ChromaDB client not initialized"}
             
             # Check client connection
             try:
@@ -241,17 +199,9 @@ class ChromaVectorStore(VectorStore):
             except Exception as e:
                 return {"status": "unhealthy", "error": f"Cannot access collection: {str(e)}"}
             
-            # Test embedding function (only for non-cloud deployments)
-            if not settings.CHROMA_USE_CLOUD and self.embedding_generator is not None:
-                try:
-                    test_embedding = self.embedding_generator(["health check test"])
-                    if not test_embedding or len(test_embedding) == 0:
-                        return {"status": "unhealthy", "error": "Embedding generator returned empty result"}
-                except Exception as e:
-                    return {"status": "unhealthy", "error": f"Embedding generator failed: {str(e)}"}
-            
             return {
                 "status": "healthy",
+                "mode": "cloud",
                 "collection_exists": collection_exists,
                 "document_count": stats.get("count", 0),
                 "collection_name": self.collection_name
@@ -262,8 +212,11 @@ class ChromaVectorStore(VectorStore):
     
     def similarity_search_with_scores(self, query: str, top_k: int = 5, filter: Optional[dict] = None) -> List[tuple]:
         """Perform similarity search and return documents with relevance scores."""
-        self._check_initialized()
-        assert self.vector_store is not None
+        self._check_client_initialized()
+        if self.vector_store is None:
+            raise GraphMindException(
+                "LangChain Chroma wrapper is not available in this runtime. Install 'langchain-chroma' to enable similarity search with scores."
+            )
         try:
             if not query.strip():
                 logging.warning("Empty query provided")
@@ -289,8 +242,11 @@ class ChromaVectorStore(VectorStore):
     
     def get_retriever(self, search_kwargs: Optional[Dict[str, Any]] = None):
         """Get a LangChain retriever interface for this vector store."""
-        self._check_initialized()
-        assert self.vector_store is not None
+        self._check_client_initialized()
+        if self.vector_store is None:
+            raise GraphMindException(
+                "LangChain Chroma wrapper is not available in this runtime. Install 'langchain-chroma' to get a LangChain retriever."
+            )
         
         if search_kwargs is None:
             search_kwargs = {"k": 5}
@@ -299,36 +255,22 @@ class ChromaVectorStore(VectorStore):
 
 
 # Factory function to create vector store instance
-def create_vector_store(embedding_generator: Optional[EmbeddingGenerator] = None) -> ChromaVectorStore:
-    """Create and return a ChromaVectorStore instance.
+def create_vector_store() -> ChromaVectorStore:
+    """Create and return a ChromaVectorStore instance (ChromaDB Cloud only).
     
-    Args:
-        embedding_generator: Optional embedding generator. Not needed for ChromaDB Cloud.
-        
     Returns:
-        ChromaVectorStore: A configured vector store instance
+        ChromaVectorStore: A configured ChromaDB Cloud vector store instance
     """
     try:
-        logging.info("Creating ChromaVectorStore instance...")
-        
-        # For ChromaDB Cloud, we still need embedding generator for query compatibility
-        if settings.CHROMA_USE_CLOUD:
-            if embedding_generator is None:
-                from src.components.processing.embeddings import EmbeddingGenerator
-                embedding_generator = EmbeddingGenerator()
-            vector_store = ChromaVectorStore(embedding_generator=embedding_generator)
-            logging.info("Using ChromaDB Cloud with built-in embedding service")
-        else:
-            if embedding_generator is None:
-                raise GraphMindException("Embedding generator is required for non-cloud deployments")
-            vector_store = ChromaVectorStore(embedding_generator=embedding_generator)
+        logging.info("Creating ChromaDB Cloud vector store...")
+        vector_store = ChromaVectorStore()
         
         # Test the vector store health
         health = vector_store.health_check()
         if health["status"] != "healthy":
             logging.warning(f"Vector store health check failed: {health}")
         else:
-            logging.info("Vector store created and healthy")
+            logging.info("ChromaDB Cloud vector store created and healthy")
             
         return vector_store
     except Exception as e:

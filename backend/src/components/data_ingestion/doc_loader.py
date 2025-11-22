@@ -1,4 +1,10 @@
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredFileLoader, UnstructuredMarkdownLoader
+from langchain_community.document_loaders import (
+    PyPDFLoader,
+    TextLoader,
+    Docx2txtLoader,
+    UnstructuredFileLoader,
+    UnstructuredMarkdownLoader,
+)
 from langchain_core.documents import Document
 from typing import List, Tuple, Dict
 from pathlib import Path
@@ -24,6 +30,8 @@ class DocumentLoader:
                 loader = PyPDFLoader(file_path)
             elif file_path.lower().endswith('.txt'):
                 loader = TextLoader(file_path, encoding='utf-8')
+            elif file_path.lower().endswith('.docx'):
+                loader = Docx2txtLoader(file_path)
             elif file_path.lower().endswith('.md'):
                 loader = UnstructuredMarkdownLoader(file_path)
             else:

@@ -2,9 +2,8 @@
 Singleton services for GraphMind components.
 Provides centralized, thread-safe access to expensive resources like embedding generators and vector stores.
 """
-from typing import Optional
+from typing import Optional, Any
 import threading
-from src.components.processing.embeddings import EmbeddingGenerator
 from src.components.processing.vector_store import ChromaVectorStore
 
 from src.config.logging import logging, GraphMindException
@@ -27,8 +26,8 @@ class GraphMindServices:
     def __init__(self):
         if hasattr(self, '_initialized') and self._initialized:
             return
-            
-        self._embedding_generator: Optional[EmbeddingGenerator] = None
+        
+        self._embedding_generator: Optional[Any] = None
         self._vector_store: Optional[ChromaVectorStore] = None
         self._embedding_lock = threading.Lock()
         self._vector_store_lock = threading.Lock()
@@ -48,6 +47,10 @@ class GraphMindServices:
                 if self._embedding_generator is None:
                     logging.info("Initializing singleton EmbeddingGenerator")
                     try:
+                        # Import lazily to avoid pulling optional heavy deps (e.g.,
+                        # HuggingFace or sentence-transformers) when running in
+                        # CHROMA cloud mode. The embeddings module is only needed
+                        # for local/self-hosted deployments.
                         from src.components.processing.embeddings import EmbeddingGenerator
                         self._embedding_generator = EmbeddingGenerator()
                     except Exception as e:
@@ -56,21 +59,14 @@ class GraphMindServices:
         return self._embedding_generator
     
     def get_vector_store(self):
-        """Get thread-safe singleton vector store instance."""
+        """Get thread-safe singleton ChromaDB Cloud vector store instance."""
         if self._vector_store is None:
             with self._vector_store_lock:
                 if self._vector_store is None:
-                    logging.info("Initializing singleton ChromaVectorStore")
+                    logging.info("Initializing singleton ChromaDB Cloud vector store")
                     try:
                         from src.components.processing.vector_store import create_vector_store
-                        from src.config.settings import settings
-                        
-                        # For ChromaDB Cloud, we don't need an embedding generator
-                        if settings.CHROMA_USE_CLOUD:
-                            self._vector_store = create_vector_store(embedding_generator=None)
-                        else:
-                            embedding_generator = self.get_embedding_generator()
-                            self._vector_store = create_vector_store(embedding_generator)
+                        self._vector_store = create_vector_store()
                     except Exception as e:
                         logging.error(f"Failed to initialize ChromaVectorStore: {e}")
                         raise GraphMindException(f"Failed to initialize ChromaVectorStore: {e}")

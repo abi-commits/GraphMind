@@ -1,3 +1,14 @@
+"""
+Local Embedding Generator for GraphMind.
+
+NOTE: This module is NOT used when CHROMA_USE_CLOUD=True (default in production).
+ChromaDB Cloud handles all embeddings automatically for both document ingestion and queries.
+
+This is only needed for:
+- Local development with persistent ChromaDB
+- Self-hosted remote ChromaDB servers
+"""
+
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.embeddings import Embeddings
 from typing import List, Union
@@ -6,10 +17,18 @@ from src.config.logging import GraphMindException, logging
 
 class EmbeddingGenerator(Embeddings):
     def __init__(self) -> None:
+        # If Chromadb cloud is enabled or embedding model is not configured,
+        # building a local embedding generator is unnecessary and should not run.
+        if settings.CHROMA_USE_CLOUD:
+            raise GraphMindException("Creating a local EmbeddingGenerator is not needed when CHROMA_USE_CLOUD=True")
+
         model_name = settings.EMBEDDING_MODEL
+        if not model_name:
+            raise GraphMindException("EMBEDDING_MODEL is not configured. Either set EMBEDDING_MODEL for local embeddings or enable CHROMA_USE_CLOUD for cloud-managed embeddings.")
+
         self.embedding_model = HuggingFaceEmbeddings(
             model_name=model_name,
-            model_kwargs={'device': settings.EMBEDDING_DEVICE},
+            model_kwargs={'device': settings.EMBEDDING_DEVICE or 'cpu'},
             encode_kwargs={
                 'normalize_embeddings': True,
                 'batch_size': settings.EMBEDDING_BATCH_SIZE

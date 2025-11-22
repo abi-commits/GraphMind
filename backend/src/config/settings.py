@@ -13,14 +13,11 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ENVIRONMENT: str = "development"
     
-    # Model settings
-    EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+    # Document Processing settings
     CHUNK_SIZE: int = 500
     CHUNK_OVERLAP: int = 200
     MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50 MB
     ALLOWED_FILE_TYPES: list[str] = ["pdf", "docx", "txt", "md", "html"]
-    EMBEDDING_BATCH_SIZE: int = 32
-    EMBEDDING_DEVICE: str = "cpu"  # e.g., "cpu" or "cuda"
     
     # LLM Model settings
     LLM_MODEL: str = "gemini-2.5-flash"
@@ -30,6 +27,13 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api/v1"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    # CORS settings
+    CORS_ORIGINS: list[str] = ["*"]  # Default to wildcard for local/dev. Override in env for production.
+    
+    # Embeddings model (optional; in production CHROMA_USE_CLOUD will handle embeddings)
+    EMBEDDING_MODEL: str | None = None
+    EMBEDDING_DEVICE: str | None = None
+    EMBEDDING_BATCH_SIZE: int = 16
     
     # Timeout settings (in seconds)
     REQUEST_TIMEOUT: int = 300  # 5 minutes for query processing
@@ -38,20 +42,12 @@ class Settings(BaseSettings):
     # Storage settings
     DATA_DIR: str = "./data"
     
-    @property
-    def VECTOR_STORE_PATH(self) -> str:
-        return os.path.join(self.DATA_DIR, "vectorstore")
-
-    # ChromaDB settings
-    CHROMA_HOST: str = "localhost"
-    CHROMA_PORT: int = 8000
-    CHROMA_COLLECTION_NAME: str = "graphmind_collection"
-    
-    # ChromaDB Cloud settings
+    # ChromaDB Cloud settings (Production)
     CHROMA_API_KEY: str = ""
     CHROMA_TENANT: str = ""
     CHROMA_DATABASE: str = ""
-    CHROMA_USE_CLOUD: bool = True  
+    CHROMA_COLLECTION_NAME: str = "graphmind_collection"
+    CHROMA_USE_CLOUD: bool = True  # Production uses ChromaDB Cloud only  
     
     # LLM API Keys
     GOOGLE_API_KEY: str = ""  # Gemini API key
@@ -65,15 +61,5 @@ class Settings(BaseSettings):
     # Redis settings
     REDIS_URL: str = ""
   
-    
-    # CORS settings
-    CORS_ORIGINS: list[str] = [
-        "http://localhost:3000",  # React default
-        "http://localhost:5173",  # Vite default
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
-        "https://*.vercel.app",   # Vercel deployments
-        "https://*.netlify.app",  # Netlify deployments (fallback)
-    ]
 
 settings = Settings()

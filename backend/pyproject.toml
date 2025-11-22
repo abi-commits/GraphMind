@@ -44,6 +44,7 @@ dependencies = [
     "pytest>=8.4.2",
     "python-multipart>=0.0.20",
     "langchain-chroma>=0.2.6",
+    "docx2txt>=0.9",
 ]
 
 [project.optional-dependencies]

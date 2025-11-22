@@ -79,9 +79,18 @@ const Workspace = () => {
   };
 
   const handleQuerySubmit = async () => {
-    await handleQuery(documents.length);
-    
-    // Update knowledge graph with query results
+    // Run the query and get visualization data directly from the hook
+    const vizData = await handleQuery(documents.length);
+
+    // Prefer the immediate returned visualization data to avoid React state timing races
+    if (vizData) {
+      setGraphDataFromQuery(vizData);
+      // Open the graph view automatically when we have visualization data
+      setShowGraph(true);
+      return;
+    }
+
+    // Fallback: if the hook's knowledgeGraph state was set, use it
     if (knowledgeGraph) {
       setGraphDataFromQuery(knowledgeGraph);
     }
@@ -174,7 +183,6 @@ const Workspace = () => {
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          hasDocuments={documents.length > 0}
         />
 
         {/* Results Area */}
